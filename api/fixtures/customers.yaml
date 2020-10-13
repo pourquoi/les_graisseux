@@ -1,0 +1,8 @@
+App\Entity\Customer:
+  customeralice:
+    user: '@alice'
+
+App\Entity\CustomerVehicle:
+  alicevehicle_{1..2}:
+    customer: '@customeralice'
+    type: '@alfaromeo_159_1'

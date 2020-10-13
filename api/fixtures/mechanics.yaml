@@ -1,0 +1,11 @@
+App\Entity\Mechanic:
+  mechanicbob:
+    user: '@bob'
+    about: <text()>
+    __calls:
+      - addService: ['@service_clean_exterior', '@service_oilchange']
+  mechanicroger:
+    user: '@roger'
+    about: <text()>
+    __calls:
+      - addService: ['@service_breaks', '@service_tools']

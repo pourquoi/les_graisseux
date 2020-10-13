@@ -1,0 +1,9 @@
+'App\Entity\Job':
+  jobalice_{1..2}:
+    customer: '@customeralice'
+    address: '@aliceaddress'
+    vehicle: '@alicevehicle_*'
+    title: <title()>
+    description: <text()>
+    __calls:
+      - addTask: ['@service_clean_exterior']

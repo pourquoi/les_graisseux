@@ -1,0 +1,40 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '5.7'
+
+        types:
+            geometry:   CrEOF\Spatial\DBAL\Types\GeometryType
+            point:      CrEOF\Spatial\DBAL\Types\Geometry\PointType
+            polygon:    CrEOF\Spatial\DBAL\Types\Geometry\PolygonType
+            linestring: CrEOF\Spatial\DBAL\Types\Geometry\LineStringType
+            uuid:       Ramsey\Uuid\Doctrine\UuidType
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App
+        dql:
+            numeric_functions:
+                st_contains:       CrEOF\Spatial\ORM\Query\AST\Functions\MySql\STContains
+                contains:          CrEOF\Spatial\ORM\Query\AST\Functions\MySql\Contains
+                st_area:           CrEOF\Spatial\ORM\Query\AST\Functions\MySql\Area
+                st_geomfromtext:   CrEOF\Spatial\ORM\Query\AST\Functions\MySql\GeomFromText
+                st_intersects:     CrEOF\Spatial\ORM\Query\AST\Functions\MySql\STIntersects
+                st_buffer:         CrEOF\Spatial\ORM\Query\AST\Functions\MySql\STBuffer
+                point:             CrEOF\Spatial\ORM\Query\AST\Functions\MySql\Point
+                x:                 CrEOF\Spatial\ORM\Query\AST\Functions\MySql\X
+                y:                 CrEOF\Spatial\ORM\Query\AST\Functions\MySql\Y
+                acos:              DoctrineExtensions\Query\Mysql\Acos
+                cos:               DoctrineExtensions\Query\Mysql\Cos
+                radians:           DoctrineExtensions\Query\Mysql\Radians
+                sin:               DoctrineExtensions\Query\Mysql\Sin

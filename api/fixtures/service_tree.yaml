@@ -1,0 +1,50 @@
+App\Entity\ServiceTree:
+  service_tools: ~
+  service_check: ~
+  service_oilchange:
+    parent: '@service_check'
+  service_breaks:
+    parent: '@service_check'
+  service_clean: ~
+  service_clean_interior:
+    parent: '@service_clean'
+  service_clean_exterior:
+    parent: '@service_clean'
+
+
+App\Entity\Translation\ServiceTranslation:
+  service_tools_tr:
+    label: 'Prêt/Location de materiel'
+    description: <text()>
+    locale: fr
+    translatable: '@service_tools'
+  service_check_tr:
+    label: 'Entretien'
+    description: <text()>
+    locale: fr
+    translatable: '@service_check'
+  service_oilchange_tr:
+    label: 'Vidange huile moteur'
+    description: <text()>
+    locale: fr
+    translatable: '@service_oilchange'
+  service_breaks_tr:
+    label: 'Remplacement des plaquettes de frein'
+    description: <text()>
+    locale: fr
+    translatable: '@service_breaks'
+  service_clean_tr:
+    label: 'Nettoyage'
+    description: <text()>
+    locale: fr
+    translatable: '@service_clean'
+  service_clean_interior_tr:
+    label: 'Nettoyage intérieur'
+    description: <text()>
+    locale: fr
+    translatable: '@service_clean_interior'
+  service_clean_exterior_tr:
+    label: 'Nettoyage exterieur'
+    description: <text()>
+    locale: fr
+    translatable: '@service_clean_exterior'

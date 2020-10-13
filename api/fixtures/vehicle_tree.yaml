@@ -1,0 +1,67 @@
+App\Entity\Energy:
+  energy_essence: ~
+  energy_diesel: ~
+  energy_electric: ~
+
+App\Entity\Translation\EnergyTranslation:
+  essencetranslation:
+    name: 'Essence'
+    translatable: '@energy_essence'
+    locale: fr
+  dieseltranslation:
+    name: 'Diesel'
+    translatable: '@energy_diesel'
+    locale: fr
+  electrictranslation:
+    name: 'Electric'
+    translatable: '@energy_electric'
+    locale: fr
+
+App\Entity\VehicleTree:
+  mercedes:
+    created_at: <dateTime()>
+    name: 'Mercedes'
+    level: 'brand'
+  mercedes_classa:
+    created_at: <dateTime()>
+    name: 'Classe A'
+    parent: '@mercedes'
+    level: 'family'
+  mercedes_classc:
+    created_at: <dateTime()>
+    name: 'Classe C'
+    parent: '@mercedes'
+    level: 'family'
+  mercedes_classa_4:
+    created_at: <dateTime()>
+    name: '4'
+    parent: '@mercedes_classa'
+    level: 'model'
+  mercedes_classc_4:
+    created_at: <dateTime()>
+    name: '4'
+    parent: '@mercedes_classc'
+    level: 'model'
+  mercedes_classa_4_{1..3}:
+    created_at: <dateTime()>
+    name: ''
+    parent: '@mercedes_classa_4'
+    energy: '@energy_*'
+    release_date: <dateTimeBetween('1980-01-01', '2020-01-01')>
+    level: 'type'
+  alfaromeo:
+    created_at: <dateTime()>
+    name: 'Alfa Romeo'
+    level: 'brand'
+  alfaromeo_159:
+    created_at: <dateTime()>
+    name: '159'
+    parent: '@alfaromeo'
+    level: 'family'
+  alfaromeo_159_{1..3}:
+    created_at: <dateTime()>
+    name: ''
+    energy: '@energy_*'
+    release_date: <dateTimeBetween('1980-01-01', '2020-01-01')>
+    parent: '@alfaromeo_159'
+    level: 'type'

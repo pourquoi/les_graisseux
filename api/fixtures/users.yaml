@@ -1,0 +1,63 @@
+parameters:
+  # pass1234
+  hash: '$argon2i$v=19$m=65536,t=4,p=1$TWpsNlJ6YUFYOVB0ZU8wMQ$/94SMq/X0A2lJwIJjHhD4QOydiMbuaJh72AcJ18HuiM'
+
+App\Entity\Address:
+  bobaddress:
+    country: FR
+    locality: Montreuil
+    __calls:
+      - setCoordinates: [[2.448955, 48.863776]]
+  rogeraddress:
+    country: FR
+    locality: Marseille
+    __calls:
+      - setCoordinates: [[5.36978, 43.296482]]
+  aliceaddress:
+    country: FR
+    locality: Bagnolet
+    __calls:
+      - setCoordinates: [[2.425216, 48.867338]]
+  useraddress_{1..10}:
+    country: FR
+    locality: <city()>
+    __calls:
+        - setCoordinates: [['<randomFloat(4, -180, 180)>', '<randomFloat(4, -90, 90)>']]
+
+App\Entity\User:
+  user_{1..10}:
+    created_at: <dateTime()>
+    email: <email()>
+    password: <{hash}>
+    username: <username()>
+    address: '@useraddress_*'
+  bob:
+    created_at: <dateTime()>
+    email: bob@example.com
+    password: <{hash}>
+    username: bob
+    address: '@bobaddress'
+  roger:
+    created_at: <dateTime()>
+    email: roger@example.com
+    password: <{hash}>
+    username: roger
+    address: '@rogeraddress'
+  alice:
+    created_at: <dateTime()>
+    email: alice@example.com
+    password: <{hash}>
+    username: alice
+    address: '@aliceaddress'
+  unverified_user:
+    created_at: <dateTime()>
+    email: unverified@example.com
+    password: <{hash}>
+    username: unverified
+    email_verification_required: true
+  # no mechanic nor customer profile
+  empty_user:
+    created_at: <dateTime()>
+    email: empty@example.com
+    password: <{hash}>
+    username: empty

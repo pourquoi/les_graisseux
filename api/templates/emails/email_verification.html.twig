@@ -1,0 +1,12 @@
+{% apply inky_to_html|inline_css(source('@css/foundation-emails.css')) %}
+    <container>
+        <row class="header">
+            <columns>
+                <spacer size="16"></spacer>
+                <h1 class="text-center">Welcome</h1>
+            </columns>
+
+            {# ... #}
+        </row>
+    </container>
+{% endapply %}

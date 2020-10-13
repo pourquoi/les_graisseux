@@ -1,0 +1,31 @@
+App\Entity\ChatRoom:
+  chatbobalice: ~
+  chatrogeralice: ~
+
+App\Entity\ChatUser:
+  chatuseralice1:
+    user: '@alice'
+    room: '@chatbobalice'
+  chatuserbob1:
+    user: '@bob'
+    room: '@chatbobalice'
+  chatuserroger1:
+    user: '@roger'
+    room: '@chatrogeralice'
+  chatuseralice2:
+    user: '@alice'
+    room: '@chatrogeralice'
+
+App\Entity\ChatMessage:
+  chatmsgalice1:
+    user: '@chatuseralice1'
+    room: '@chatbobalice'
+    message: <text()>
+  chatmsgbob1:
+    user: '@chatuserbob1'
+    room: '@chatbobalice'
+    message: <text()>
+  chatmsgalice2:
+    user: '@chatuseralice2'
+    room: '@chatrogeralice'
+    message: <text()>
