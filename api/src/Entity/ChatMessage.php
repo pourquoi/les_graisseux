@@ -5,16 +5,25 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ChatMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Action\NotFoundAction;
 use App\Dto\Chat;
 
 /**
  * @ApiResource(
  *     collectionOperations={
  *         "get",
- *         "create": {
+ *         "post": {
  *             "method"="POST",
+ *             "security"="is_granted('ROLE_USER')",
  *             "input"=Chat\Reply::class
  *         }
+ *     },
+ *     itemOperations={
+ *         "get"={
+ *             "controller"=NotFoundAction::class,
+ *             "read"=false,
+ *             "output"=false,
+ *         },
  *     }
  * )
  * @ORM\Entity(repositoryClass=ChatMessageRepository::class)

@@ -28,7 +28,12 @@ use App\Dto\User as UserDto;
  *          "get",
  *          "put" = { "security" = "is_granted('EDIT_USER', object)" },
  *          "patch" = { "security" = "is_granted('EDIT_USER', object)" },
- *          "delete" = { "security" = "is_granted('DELETE_USER', object)" }
+ *          "delete" = { "security" = "is_granted('DELETE_USER', object)" },
+ *          "edit_address" = {
+ *              "method" = "PUT",
+ *              "security" = "is_granted('EDIT_USER', object)",
+ *              "normalizationContext" = {"groups"={"read", "address:write"}}
+ *          }
  *     },
  * )
  *
@@ -102,7 +107,7 @@ class User implements UserInterface
     /**
      * @var Address
      * @ORM\ManyToOne(targetEntity="Address")
-     * @Groups({"read", "write"})
+     * @Groups({"read", "write", "address:write"})
      */
     protected $address;
 
@@ -150,6 +155,12 @@ class User implements UserInterface
 
         if ($this->isAdmin())
             $roles[] = 'ROLE_ADMIN';
+
+        if ($this->customer !== null)
+            $roles[] = 'ROLE_CUSTOMER';
+
+        if ($this->mechanic !== null)
+            $roles[] = 'ROLE_MECHANIC';
 
         return array_unique($roles);
     }

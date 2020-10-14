@@ -6,6 +6,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use App\Entity\ChatRoom;
+use App\Entity\JobApplication;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
 
@@ -30,19 +31,29 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        $classes = [ChatRoom::class];
+        $classes = [ChatRoom::class, JobApplication::class];
 
-        if (!in_array($resourceClass, $classes) || $this->security->isGranted('BO_ADMIN') || null === $user = $this->security->getUser()) {
+        if (!in_array($resourceClass, $classes) || $this->security->isGranted('ROLE_ADMIN_BO') || null === $user = $this->security->getUser()) {
             return;
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
 
-        if ($resourceClass === ChatRoom::class) {
-            $queryBuilder
-                ->innerJoin(sprintf('%s.users', $rootAlias), 'chat_users')
-                ->andWhere('chat_users.user = :user')
-                ->setParameter('user', $this->security->getUser());
+        switch($resourceClass) {
+            case ChatRoom::class:
+                $queryBuilder
+                    ->innerJoin(sprintf('%s.users', $rootAlias), 'chat_users')
+                    ->andWhere('chat_users.user = :user')
+                    ->setParameter('user', $this->security->getUser());
+                break;
+            case JobApplication::class:
+                $queryBuilder
+                    ->innerJoin(sprintf('%s.mechanic', $rootAlias), 'm')
+                    ->innerJoin(sprintf('%s.job', $rootAlias), 'j')
+                    ->innerJoin('j.customer', 'c')
+                    ->where('c.user = :user OR m.user = :user')
+                    ->setParameter('user', $this->security->getUser());
+                break;
         }
     }
 }

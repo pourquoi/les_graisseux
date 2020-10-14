@@ -30,7 +30,5 @@ class CustomerTest extends Base
 
         ]]);
         $this->assertResponseIsSuccessful();
-
-        print_r($response->getContent());
     }
 }

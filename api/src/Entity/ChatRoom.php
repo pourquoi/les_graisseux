@@ -23,6 +23,9 @@ use App\Dto\Chat;
  *              "method"="POST",
  *              "input"=Chat\CreateChat::class,
  *          }
+ *     },
+ *     itemOperations={
+ *         "get"
  *     }
  * )
  * @ORM\Entity(repositoryClass=ChatRoomRepository::class)

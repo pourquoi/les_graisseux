@@ -9,9 +9,31 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Filter\JobDistanceFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
+use App\Dto\Job\JobInput;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     normalizationContext={"groups"={"read", "job:read"}},
+ *     denormalizationContext={"groups"={"write", "job:write"}},
+ *     collectionOperations={
+ *         "get",
+ *         "post"={
+ *             "method"="POST",
+ *             "security"="is_granted('ROLE_CUSTOMER')",
+ *             "security_post_denormalize"="is_granted('JOB_CREATE', object)",
+ *             "input"=JobInput::class
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get",
+ *         "put"={
+ *             "method"="PUT",
+ *             "security"="is_granted('JOB_EDIT', object)",
+ *             "input"=JobInput::class
+ *         }
+ *     }
+ * )
  * @ORM\Entity(repositoryClass=JobRepository::class)
  * @ApiFilter(JobDistanceFilter::class, properties={"address.geocoordinates"})
  */
@@ -28,51 +50,59 @@ class Job
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
      */
     protected $title;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"read", "write"})
      */
     protected $description;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $immobilized;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $moving_range;
 
     /**
      * @var bool
      * @ORM\Column(type="boolean")
+     * @Groups({"read", "write"})
      */
     protected $urgent = false;
 
     /**
      * @var Collection|ServiceTree[]
      * @ORM\ManyToMany(targetEntity="ServiceTree")
+     * @Groups({"read"})
      */
     protected $tasks;
 
     /**
      * @var Customer
      * @ORM\ManyToOne(targetEntity="Customer")
+     * @Groups({"job:read"})
      */
     protected $customer;
 
     /**
      * @var CustomerVehicle
      * @ORM\ManyToOne(targetEntity="CustomerVehicle")
+     * @Groups({"job:read"})
      */
     protected $vehicle;
 
     /**
      * @var Address
-     * @ORM\ManyToOne(targetEntity="Address")
+     * @ORM\ManyToOne(targetEntity="Address", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
      */
     protected $address;

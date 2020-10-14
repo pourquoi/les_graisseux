@@ -37,7 +37,5 @@ class MechanicTest extends Base
             'about' => 'hello'
         ]]);
         $this->assertResponseIsSuccessful();
-
-        print_r($response->getContent());
     }
 }

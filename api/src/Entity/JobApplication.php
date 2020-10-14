@@ -5,13 +5,35 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\JobApplicationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Dto\Job\ApplicationInput;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     normalizationContext={"groups"={"read", "application:read"}},
+ *     denormalizationContext={"groups"={"write", "application:write"}},
+ *     itemOperations={
+ *         "get"={
+ *             "security"="is_granted('READ_APPLICATION', object)"
+ *         }
+ *     },
+ *     collectionOperations={
+ *         "get",
+ *         "post"={
+ *             "method"="POST",
+ *             "security_post_denormalize"="is_granted('CREATE_APPLICATION', object)",
+ *             "input"=ApplicationInput::class
+ *         }
+ *     }
+ * )
  * @ORM\Entity(repositoryClass=JobApplicationRepository::class)
  */
 class JobApplication
 {
+    const STATUS_CANCEL = 'cancel';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_ACCEPTED = 'accepted';
+
     use Traits\TimestampTrait;
 
     /**
@@ -20,6 +42,13 @@ class JobApplication
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @var string
+     * @ORM\Column(nullable=true)
+     * @Groups({"read"})
+     */
+    private $status;
 
     /**
      * @var Job
@@ -37,7 +66,7 @@ class JobApplication
 
     /**
      * @var ChatRoom
-     * @ORM\OneToOne(targetEntity="ChatRoom", inversedBy="application")
+     * @ORM\OneToOne(targetEntity="ChatRoom", inversedBy="application", cascade={"persist", "remove"})
      */
     protected $chat;
 
@@ -77,6 +106,16 @@ class JobApplication
     {
         $this->chat = $chat;
         return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?string $status): void
+    {
+        $this->status = $status;
     }
 
 

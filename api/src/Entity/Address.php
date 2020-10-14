@@ -8,7 +8,10 @@ use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     normalizationContext={"groups"={"read", "address:read"}},
+ *     denormalizationContext={"groups"={"write", "address:write"}},
+ * )
  * @ORM\Entity(repositoryClass=AddressRepository::class)
  */
 class Address
