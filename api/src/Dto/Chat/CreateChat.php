@@ -2,15 +2,18 @@
 
 namespace App\Dto\Chat;
 
+use App\Entity\JobApplication;
+use App\Entity\User;
+
 final class CreateChat
 {
     /**
-     * @var int|null
+     * @var User
      */
     public $from;
 
     /**
-     * @var int|null
+     * @var User
      */
     public $to;
 
@@ -18,9 +21,4 @@ final class CreateChat
      * @var string|null
      */
     public $message;
-
-    /**
-     * @var int|null
-     */
-    public $application;
 }

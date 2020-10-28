@@ -35,7 +35,7 @@ class ChatRoom
     use Traits\TimestampTrait;
 
     /**
-     * @ApiProperty(identifier=false)
+     * @ApiProperty(identifier=false, writable=false)
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")

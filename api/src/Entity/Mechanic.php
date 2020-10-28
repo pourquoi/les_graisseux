@@ -3,7 +3,9 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\MechanicRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -27,6 +29,7 @@ use App\Dto\User as UserDto;
  *         "get",
  *         "put"={
  *             "method"="PUT",
+ *             "security"="is_granted('ROLE_ADMIN') or object.getUser() == user",
  *             "input"=UserDto\MechanicProfile::class
  *         }
  *     }
@@ -42,7 +45,8 @@ class Mechanic
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"read"})
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     protected $id;
 
@@ -72,9 +76,10 @@ class Mechanic
     protected $avg_rating;
 
     /**
-     * @var ServiceTree[]|Collection
-     * @ORM\ManyToMany(targetEntity="ServiceTree")
-     * @Groups({"read", "write"})
+     * @var MechanicService[]|Collection
+     * @ORM\ManyToMany(targetEntity="MechanicService", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @Groups({"mechanic:read", "mechanic:write"})
+     * @ApiSubresource()
      */
     protected $services;
 
@@ -158,15 +163,16 @@ class Mechanic
         return $this->services;
     }
 
-    public function addService(ServiceTree $service): self
+    public function addService(MechanicService $service): self
     {
         if (!$this->services->contains($service)) {
             $this->services->add($service);
+            $service->setMechanic($this);
         }
         return $this;
     }
 
-    public function removeService(ServiceTree $service): self
+    public function removeService(MechanicService $service): self
     {
         if ($this->services->contains($service)) {
             $this->services->remove($service);

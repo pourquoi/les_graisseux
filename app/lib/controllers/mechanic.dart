@@ -1,5 +1,5 @@
 import 'package:app/models/mechanic.dart';
-import 'package:app/services/mechanic.dart';
+import 'package:app/services/endpoints/mechanic.dart';
 import 'package:get/state_manager.dart';
 
 class MechanicController extends GetxController {

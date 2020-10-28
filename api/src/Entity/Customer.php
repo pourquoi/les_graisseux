@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\CustomerRepository;
@@ -40,19 +41,22 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     protected $id;
 
     /**
      * @var User
      * @ORM\OneToOne(targetEntity="User", inversedBy="customer")
-     * @Groups({"customer:read"})
+     * @Groups({"customer:read", "job:read"})
      */
     protected $user;
 
     /**
      * @var CustomerVehicle[]|Collection
      * @ORM\OneToMany(targetEntity="CustomerVehicle", mappedBy="customer")
+     * @Groups({"customer:read"})
      * @ApiSubresource()
      */
     protected $vehicles;

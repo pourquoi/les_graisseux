@@ -3,7 +3,15 @@
     customer: '@customeralice'
     address: '@aliceaddress'
     vehicle: '@alicevehicle_*'
-    title: <title()>
+    title: <sentence()>
+    description: <text()>
+    __calls:
+      - addTask: ['@service_clean_exterior']
+  job_{1..40}:
+    customer: '@customer_*'
+    address: '@useraddress_*'
+    vehicle: '@customervehicle_*'
+    title: <sentence()>
     description: <text()>
     __calls:
       - addTask: ['@service_clean_exterior']

@@ -2,12 +2,15 @@
 
 namespace App\Dto\User;
 
+use App\Entity\Address;
+use App\Entity\MechanicService;
+use App\Entity\User;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 class MechanicProfile
 {
     /**
-     * @var int
+     * @var User
      * @Groups({"write"})
      */
     public $user;
@@ -31,7 +34,13 @@ class MechanicProfile
     public $working_range;
 
     /**
-     * @var array
+     * @var Address
+     * @Groups({"write"})
+     */
+    public $address;
+
+    /**
+     * @var MechanicService[]
      * @Groups({"write"})
      */
     public $services;

@@ -5,3 +5,6 @@ final jobs = '/jobs/';
 final job = '/job/:job';
 final mechanics = '/mechanics/';
 final mechanic = '/mechanics/:mechanic';
+final account = '/account';
+final account_jobs = '/account/jobs';
+final account_job = '/account/jobs/:job';

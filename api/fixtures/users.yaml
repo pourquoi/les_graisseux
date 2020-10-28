@@ -31,6 +31,12 @@ App\Entity\User:
     password: <{hash}>
     username: <username()>
     address: '@useraddress_*'
+  admin:
+    created_at: <dateTime()>
+    email: admin@example.com
+    password: <{hash}>
+    username: admin
+    is_admin: true
   bob:
     created_at: <dateTime()>
     email: bob@example.com

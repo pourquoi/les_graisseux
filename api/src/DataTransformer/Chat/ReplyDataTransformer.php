@@ -42,18 +42,14 @@ class ReplyDataTransformer implements DataTransformerInterface
         $this->validator->validate($data);
 
         /** @var ChatRoom $room */
-        $room = $this->chatRoomRepository->findOneByUuid($data->room);
+        $room = $data->room;
 
-        if (!$room) {
-            throw new \InvalidArgumentException(sprintf('Error posting chat reply: room %s not found', $data->room));
+        if (!$room->getId()) {
+            throw new \InvalidArgumentException(sprintf('Error posting chat reply: invalid room'));
         }
 
-        if (null !== $data->user && ($this->security->isGranted('ROLE_ADMIN_BO') || null === $this->security->getUser())) {
-            $fromUser = $this->userRepository->find($data->user);
-
-            if (null === $fromUser) {
-                throw new \InvalidArgumentException(sprintf('Error creating chat: user %d not found', $data->user));
-            }
+        if (null !== $data->user && $data->user->getId() && $this->security->isGranted('ROLE_ADMIN_BO')) {
+            $fromUser = $data->user;
         } else {
             $fromUser = $this->security->getUser();
         }

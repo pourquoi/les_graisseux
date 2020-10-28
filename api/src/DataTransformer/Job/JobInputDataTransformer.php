@@ -3,7 +3,10 @@
 namespace App\DataTransformer\Job;
 
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
+use ApiPlatform\Core\Serializer\AbstractItemNormalizer;
+use ApiPlatform\Core\Validator\ValidatorInterface;
 use App\Dto\Job\JobInput;
+use App\Entity\Customer;
 use App\Entity\Job;
 use App\Entity\User;
 use App\Repository\CustomerRepository;
@@ -13,12 +16,14 @@ use Symfony\Component\Security\Core\Security;
 
 class JobInputDataTransformer implements DataTransformerInterface
 {
+    private $validator;
     private $security;
     private $customerRepository;
     private $customerVehicleRepository;
 
-    public function __construct(Security $security, CustomerRepository $customerRepository, CustomerVehicleRepository $customerVehicleRepository )
+    public function __construct(ValidatorInterface $validator, Security $security, CustomerRepository $customerRepository, CustomerVehicleRepository $customerVehicleRepository )
     {
+        $this->validator = $validator;
         $this->security = $security;
         $this->customerRepository = $customerRepository;
         $this->customerVehicleRepository = $customerVehicleRepository;
@@ -32,28 +37,47 @@ class JobInputDataTransformer implements DataTransformerInterface
      */
     public function transform($data, string $to, array $context = [])
     {
+        $this->validator->validate($data);
+
+        $customer = null;
+
+        if (isset($context[AbstractItemNormalizer::OBJECT_TO_POPULATE])) {
+            $job = $context[AbstractItemNormalizer::OBJECT_TO_POPULATE];
+            $customer = $job->getCustomer();
+        } else {
+            $job = new Job();
+        }
+
         /** @var User $currentUser */
         $currentUser = $this->security->getUser();
 
-        if ($this->security->isGranted('ROLE_ADMIN') && $data->customer !== null) {
-            $customer = $this->customerRepository->find($data->customer);
-        } else {
-            $customer = $currentUser->getCustomer();
-        }
-
         if ($customer === null) {
-            throw new \InvalidArgumentException();
+            if ($this->security->isGranted('ROLE_ADMIN') && $data->customer !== null) {
+                $customer = $data->customer;
+
+                if ($customer === null) {
+                    throw new \InvalidArgumentException();
+                }
+            } else {
+                $customer = $currentUser->getCustomer();
+                if ($customer === null) {
+                    $customer = new Customer();
+                    $customer->setUser($currentUser);
+                    $currentUser->setCustomer($customer);
+                }
+            }
         }
 
         $vehicle = null;
         if ($data->vehicle) {
-            $vehicle = $this->customerVehicleRepository->find($data->vehicle);
-            if ($vehicle->getCustomer() !== $customer) {
+            $vehicle = $data->vehicle;
+            if ($vehicle->getCustomer() === null) {
+                $vehicle->setCustomer($customer);
+            } else if ($vehicle->getCustomer() !== $customer) {
                 throw new \InvalidArgumentException();
             }
         }
 
-        $job = new Job();
         $job->setTitle($data->title);
         $job->setDescription($data->description);
         $job->setCustomer($customer);
@@ -63,6 +87,15 @@ class JobInputDataTransformer implements DataTransformerInterface
             $job->setAddress(clone $data->address);
         } else if ($customer->getUser()->getAddress() !== null) {
             $job->setAddress($customer->getUser()->getAddress());
+        }
+
+        if ($data->tasks !== null ) {
+            $job->getTasks()->clear();
+            if (count($data->tasks) > 0) {
+                foreach ($data->tasks as $task) {
+                    $job->addTask($task);
+                }
+            }
         }
 
         return $job;

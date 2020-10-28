@@ -1,29 +1,28 @@
-import 'package:app/models/user.dart';
-import 'package:app/services/crud_service.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:meta/meta.dart';
-import 'package:get/state_manager.dart';
-
 import 'package:app/services/api.dart';
+import 'package:app/services/endpoints/user.dart';
+import 'package:get/state_manager.dart';
+import 'package:meta/meta.dart';
+import 'package:app/models/user.dart';
+import 'package:get_storage/get_storage.dart';
 
 enum UserStatus { anonymous, loggedin, loggedout }
 
-class UserService extends CrudService {
+class UserController extends GetxController {
+  ApiService api;
+  UserService userService;
+
   final token = ''.obs;
   final user = User().obs;
   final loading = false.obs;
   final status = UserStatus.anonymous.obs;
 
-  ApiService api;
-
-  User fromJson(m) => User.fromJson(m);
-
-  UserService() : super(resource: 'users') {
-    token.nil();
+  void onInit() {
   }
 
-  Future<UserService> init() async {
+  Future<UserController> bootstrap() async {
     api = Get.find<ApiService>();
+    userService = Get.find<UserService>();
+
     api.token = token;
 
     GetStorage box = GetStorage();
@@ -50,6 +49,7 @@ class UserService extends CrudService {
     return api.post('/authentication_token',
         data: {'email': email, 'password': password}).then((data) {
       token.value = data['token'];
+      api.token = token;
       user.value.id = data['uid'];
       return refresh();
     }).catchError((error) {
@@ -67,11 +67,11 @@ class UserService extends CrudService {
 
   Future register({@required String email, @required String password}) async {
     token.nil();
-    loading.value = false;
+    loading.value = true;
     return api.post('/api/users',
         data: {'email': email, 'password': password}).then((data) {
       user.value = User.fromJson(data);
-      loading.value = false;
+      return login(email: email, password: password);
     }).catchError((error) {
       loading.value = false;
       status.value = UserStatus.anonymous;

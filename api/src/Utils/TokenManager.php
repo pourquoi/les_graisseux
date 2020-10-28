@@ -11,7 +11,6 @@ class TokenManager
     public function __construct(JWTEncoderInterface $encoder)
     {
         $this->encoder = $encoder;
-        print(get_class($encoder));
     }
 
     public function create($payload)

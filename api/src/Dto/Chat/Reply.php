@@ -2,10 +2,13 @@
 
 namespace App\Dto\Chat;
 
+use App\Entity\ChatRoom;
+use App\Entity\User;
+
 class Reply
 {
     /**
-     * @var string
+     * @var ChatRoom
      */
     public $room;
 
@@ -15,7 +18,7 @@ class Reply
     public $message;
 
     /**
-     * @var int
+     * @var User
      */
     public $user;
 }

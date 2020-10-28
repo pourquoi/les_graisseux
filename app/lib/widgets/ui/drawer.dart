@@ -1,13 +1,17 @@
 
+import 'package:app/controllers/app.dart';
+import 'package:app/controllers/user.dart';
+import 'package:app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:app/routes.dart' as routes;
-import 'package:app/services/user.dart';
+import 'package:app/services/endpoints/user.dart';
 
 class AppDrawer extends StatelessWidget
 {
-  final UserService userService = Get.find();
+  final AppController appController = Get.find();
+  final UserController userController = Get.find();
 
   Widget build(BuildContext context) {
     return Drawer(
@@ -15,10 +19,11 @@ class AppDrawer extends StatelessWidget
         padding: EdgeInsets.zero,
         children: [
           Obx(() {
-            if (userService.status.value == UserStatus.loggedin) {
+            if (userController.status.value == UserStatus.loggedin) {
               return UserAccountsDrawerHeader(
-                accountEmail: Text(userService.user.value.email ?? ''),
-                accountName: Text(userService.user.value.username ?? ''),
+                onDetailsPressed: () => Get.offAndToNamed(routes.account),
+                accountEmail: Text(userController.user.value.email ?? ''),
+                accountName: Text(userController.user.value.username ?? ''),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                 ),
@@ -30,6 +35,56 @@ class AppDrawer extends StatelessWidget
                   color: Colors.blue,
                 ),
               );
+            }
+          }),
+
+          Obx(() {
+            if (userController.status.value == UserStatus.loggedin) {
+              User user = userController.user.value;
+              if (user.customer == null && user.mechanic == null) {
+                return ListTile(
+                  title: RaisedButton(onPressed: () => Get.toNamed(routes.onboarding), child: Text('complet profile'))
+                );
+              } else if (user.customer == null) {
+                return ListTile(
+                  title: RaisedButton(onPressed: () => Get.toNamed(routes.onboarding, arguments: {'type': ProfileType.Customer}), child: Text('post a job'))
+                );
+              } else if (user.mechanic == null) {
+                return ListTile(
+                  title: RaisedButton(onPressed: () => Get.toNamed(routes.onboarding, arguments: {'type': ProfileType.Mechanic}), child: Text('create my mechanic'))
+                );
+              } else {
+                return ListTile(
+                  title: RaisedButton(
+                    onPressed: () {
+                      if (appController.profileType.value == ProfileType.Mechanic) {
+                        appController.profileType.value = ProfileType.Customer;
+                      } else {
+                        appController.profileType.value = ProfileType.Mechanic;
+                      }
+                    }, 
+                    child: appController.profileType.value == ProfileType.Mechanic ? Text('switch to customer') : Text('switch to mechanic')
+                  )
+                );
+              }
+            } else {
+              return SizedBox.shrink();
+            }
+          }),
+
+          Obx(() {
+            if (userController.status.value == UserStatus.loggedin && userController.user.value.customer != null) {
+              return ListTile(
+                title: Row(
+                  children: [
+                    Icon(Icons.list),
+                    Padding(padding: EdgeInsets.only(left: 8.0), child: Text('My jobs'))
+                  ]
+                ),
+                onTap: () { Get.offAndToNamed(routes.account_jobs); },
+              );
+            } else {
+              return SizedBox.shrink();
             }
           }),
 
@@ -55,7 +110,7 @@ class AppDrawer extends StatelessWidget
 
 
           Obx(() {
-            if (userService.status.value == UserStatus.loggedin) {
+            if (userController.status.value == UserStatus.loggedin) {
               return ListTile(
                 title: Row(
                   children: [
@@ -64,14 +119,14 @@ class AppDrawer extends StatelessWidget
                   ],
                 ),
                 onTap: () {
-                  userService.logout();
+                  userController.logout();
                 },
               );
             } else {
               return ListTile(
                 title: Row(
                   children: [
-                    Icon(Icons.logout),
+                    Icon(Icons.login),
                     Padding(padding: EdgeInsets.only(left: 8.0), child: Text('Login'))
                   ],
                 ),

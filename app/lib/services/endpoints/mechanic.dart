@@ -16,7 +16,5 @@ class MechanicQueryParameters extends PaginatedQueryParameters {
 }
 
 class MechanicService extends CrudService<Mechanic> {
-  MechanicService() : super(resource: 'mechanics');
-
-  Mechanic fromJson(m) => Mechanic.fromJson(m);
+  MechanicService() : super(resource: 'mechanics', fromJson: (data) => Mechanic.fromJson(data), toJson: (mechanic) => mechanic.toJson());
 }

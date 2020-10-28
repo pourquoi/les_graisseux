@@ -1,150 +1,349 @@
-import 'dart:convert';
-import 'package:app/models/vehicle_tree.dart';
-import 'package:equatable/equatable.dart';
+import 'package:get/get.dart';
 
-import 'package:app/models/service_tree.dart';
-import 'package:app/services/user.dart';
-import 'package:get/state_manager.dart';
-
-import 'package:app/controllers/app.dart';
 import 'package:app/models/user.dart';
+import 'package:app/models/address.dart';
+import 'package:app/models/customer_vehicle.dart';
+import 'package:app/models/job.dart';
+import 'package:app/models/vehicle_tree.dart';
+import 'package:app/models/service_tree.dart';
 
-enum OnboardingStep { Profile, Account, Services, Vehicle, Completed }
+import 'package:app/controllers/user.dart';
+import 'package:app/controllers/app.dart';
+import 'package:app/controllers/account/job.dart';
+import 'package:app/controllers/account/mechanic.dart';
 
-class OnboardingStepController extends Equatable {
-  final OnboardingStep step;
-  final OnboardingStep next;
-  final OnboardingStep prev;
+enum OnboardingStep { 
+  Profile, 
+  Account, 
+  JobServices, 
+  JobVehicle, 
+  MechanicServices, 
+  Address, 
+  Description, 
+  Completed,
+}
 
-  OnboardingStepController(this.step, {this.next, this.prev});
+abstract class OnboardingStepController {
+  OnboardingStep next();
+  OnboardingStep prev();
 
-  @override
-  List<Object> get props => [step];
+  bool get disabled => false;
+}
+
+class OnboardingProfile with OnboardingStepController {
+  ProfileType initialProfile;
+  OnboardingController _controller;
+
+  OnboardingProfile(this._controller, {this.initialProfile});
+
+  bool get disabled => initialProfile == ProfileType.Mechanic || initialProfile == ProfileType.Customer;
+  
+  OnboardingStep next() {
+    return OnboardingStep.Account;
+  }
+
+  OnboardingStep prev() {
+    return null;
+  }
+
+  void selectProfile(ProfileType type) {
+    _controller.profileType.value = type;
+    _controller.next();
+  }
+}
+
+class OnboardingAccount with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingAccount(this._controller);
+
+  bool get disabled {
+    return _controller.userController.status.value == UserStatus.loggedin;
+  }
+
+  OnboardingStep next() {
+    if (_controller.profileType.value == ProfileType.Customer) {
+      return OnboardingStep.JobServices;
+    } else {
+      return OnboardingStep.MechanicServices;
+    }
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.Profile;
+  }
+
+  Future register({String email, String password}) {
+    _controller.loading.value = true;
+    
+    return _controller.userController
+          .register(email: email, password: password)
+          .then((_) {
+            _controller.loading.value = false;
+            _controller.next();
+          }).catchError((error) {
+            _controller.loading.value = false;
+          });
+  }
+}
+
+class OnboardingJobServices with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingJobServices(this._controller);
+
+  OnboardingStep next() {
+    if (_controller.jobController.job.value.tasks.isNotEmpty)
+      return OnboardingStep.JobVehicle;
+    else
+      return null;
+  }
+
+  OnboardingStep prev() {
+    if (_controller.userController.status.value == UserStatus.loggedin) {
+      return null;
+    } else {
+      return OnboardingStep.Account;
+    }
+  }
+
+  void addTask(ServiceTree task) {
+    _controller.jobController.job.value.tasks.add(task);
+    _controller.jobController.job.refresh();
+  }
+
+  void removeTask(ServiceTree task) {
+    _controller.jobController.job.value.removeTask(task);
+    _controller.jobController.job.refresh();
+  }
+}
+
+class OnboardingJobVehicle with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingJobVehicle(this._controller);
+
+  OnboardingStep next() {
+    return OnboardingStep.Address;
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.JobServices;
+  }
+
+  void setVehicle(VehicleTree vehicle) {
+    Job job = _controller.jobController.job.value;
+    if (vehicle == null) {
+      job.vehicle = null;
+    } else {
+      if (job.vehicle == null) {
+        job.vehicle = new CustomerVehicle(customer: job.customer, type: vehicle);
+        job.vehicle.type = vehicle;
+      }
+
+      job.vehicle.type = vehicle;
+      job.vehicle.customer = _controller.userController.user.value.customer;
+    }
+    _controller.jobController.job.refresh();
+  }
+}
+
+class OnboardingMechanicServices with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingMechanicServices(this._controller);
+
+  OnboardingStep next() {
+    return OnboardingStep.Address;
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.Account;
+  }
+}
+
+class OnboardingAddress with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingAddress(this._controller);
+
+  OnboardingStep next() {
+    return OnboardingStep.Description;
+  }
+
+  OnboardingStep prev() {
+    if (_controller.profileType.value == ProfileType.Customer) {
+      return OnboardingStep.JobVehicle;
+    } else {
+      return OnboardingStep.MechanicServices;
+    }
+  }
+
+  void setAddress(Address address) {
+    if (_controller.profileType.value == ProfileType.Customer) {
+      _controller.jobController.job.value.address = address;
+      _controller.jobController.job.refresh();
+    } else {
+      _controller.userController.user.value.address = address;
+      _controller.userController.user.refresh();
+    }
+    _controller.next();
+  }
+}
+
+class OnboardingDescription with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingDescription(this._controller);
+
+  OnboardingStep next() {
+    return OnboardingStep.Completed;
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.Address;
+  }
+}
+
+class OnboardingCompleted with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingCompleted(this._controller);
+
+  OnboardingStep next() {
+    return null;
+  }
+
+  OnboardingStep prev() {
+    return null;
+  }
 }
 
 class OnboardingController extends GetxController {
-  OnboardingController() {}
-
-  void onInit() {
-    appController = Get.find<AppController>();
-    userService = Get.find<UserService>();
-
-    _buildSteps();
-  }
-
-  AppController appController;
-  UserService userService;
-
-  final user = User().obs;
-
-  final vehicle = VehicleTree().obs;
-
-  final RxList<ServiceTree> services = List<ServiceTree>().obs;
-
   final profileType = ProfileType.Undefined.obs;
-
   final step = OnboardingStep.Profile.obs;
-
   final loading = false.obs;
 
   Map<OnboardingStep, OnboardingStepController> steps;
 
-  void _buildSteps() {
-    if (profileType.value == ProfileType.Undefined) {
-      steps = {
-        OnboardingStep.Profile:
-            OnboardingStepController(OnboardingStep.Profile),
-      };
+  AppController appController;
+  UserController userController;
+  AccountJobController jobController;
+  AccountMechanicController mechanicController;
+
+  OnboardingController();
+
+  void onInit() {
+    print('OnboardingController.onInit');
+
+    appController = Get.find<AppController>();
+    userController = Get.find<UserController>();
+    jobController = Get.find<AccountJobController>();
+    mechanicController = Get.find<AccountMechanicController>();
+
+    try {
+      profileType.value = Get.arguments['type'];
+    } catch(error) {}
+
+    steps = {
+      OnboardingStep.Profile: OnboardingProfile(this, initialProfile: profileType.value),
+      OnboardingStep.Account: OnboardingAccount(this),
+      OnboardingStep.JobServices: OnboardingJobServices(this),
+      OnboardingStep.JobVehicle: OnboardingJobVehicle(this),
+      OnboardingStep.MechanicServices: OnboardingMechanicServices(this),
+      OnboardingStep.Address: OnboardingAddress(this),
+      OnboardingStep.Description: OnboardingDescription(this),
+      OnboardingStep.Completed: OnboardingCompleted(this)
+    };
+
+    if (profileType.value != ProfileType.Customer && profileType.value != ProfileType.Mechanic) {
+      if (userController.user.value.mechanic == null && userController.user.value.customer != null) {
+        profileType.value = ProfileType.Mechanic;
+      } else if (userController.user.value.mechanic != null && userController.user.value.customer == null) {
+        profileType.value = ProfileType.Customer;
+      }
+    }
+
+    if (profileType.value != ProfileType.Customer && profileType.value != ProfileType.Mechanic) {
+      step.value = OnboardingStep.Profile;
     } else {
-      if (profileType.value == ProfileType.Mechanic) {
-        steps = {
-          OnboardingStep.Profile: OnboardingStepController(
-              OnboardingStep.Profile,
-              next: OnboardingStep.Services),
-          OnboardingStep.Services: OnboardingStepController(
-              OnboardingStep.Services,
-              next: OnboardingStep.Vehicle,
-              prev: OnboardingStep.Profile),
-          OnboardingStep.Vehicle: OnboardingStepController(
-              OnboardingStep.Vehicle,
-              next: OnboardingStep.Account,
-              prev: OnboardingStep.Services),
-          OnboardingStep.Account: OnboardingStepController(
-              OnboardingStep.Account,
-              next: OnboardingStep.Completed,
-              prev: OnboardingStep.Vehicle),
-          OnboardingStep.Completed:
-              OnboardingStepController(OnboardingStep.Completed),
-        };
-      } else if (profileType.value == ProfileType.Customer) {
-        steps = {
-          OnboardingStep.Profile: OnboardingStepController(
-              OnboardingStep.Profile,
-              next: OnboardingStep.Services),
-          OnboardingStep.Services: OnboardingStepController(
-              OnboardingStep.Services,
-              next: OnboardingStep.Vehicle,
-              prev: OnboardingStep.Profile),
-          OnboardingStep.Vehicle: OnboardingStepController(
-              OnboardingStep.Vehicle,
-              next: OnboardingStep.Account,
-              prev: OnboardingStep.Services),
-          OnboardingStep.Account: OnboardingStepController(
-              OnboardingStep.Account,
-              next: OnboardingStep.Completed,
-              prev: OnboardingStep.Vehicle),
-          OnboardingStep.Completed:
-              OnboardingStepController(OnboardingStep.Completed),
-        };
+      if (profileType.value == ProfileType.Customer) {
+        step.value = OnboardingStep.JobServices;
+      } else {
+        step.value = OnboardingStep.MechanicServices;
       }
     }
   }
 
-  Future<bool> next() {
-    _buildSteps();
+  OnboardingStepController get currentController => steps[step];
 
-    OnboardingStep last = step.value;
+  Future<bool> next() async {
+    OnboardingStep _currentStep = step.value;
 
-    if (steps.containsKey(last) && steps[last].next != null) {
-      step.value = steps[last].next;
+    while( _currentStep != null ) {
+      OnboardingStep next = steps[_currentStep].next();
+      print("current $_currentStep next $next");
+      if (next != null) {
+        if (steps[next].disabled) {
+          _currentStep = next;
+          continue;
+        } else {
+          step.value = next;
+          break;
+        }
+      } else {
+        break;
+      }
     }
 
-    return Future.value(last != step.value);
+    return _currentStep != step.value;
   }
 
-  Future<bool> prev() {
-    _buildSteps();
+  Future<bool> prev() async {
+    OnboardingStep _currentStep = step.value;
 
-    OnboardingStep last = step.value;
-
-    if (steps.containsKey(last) && steps[last].prev != null) {
-      step.value = steps[last].prev;
+    while (_currentStep != null) {
+      OnboardingStep prev = steps[_currentStep].prev();
+      print("current $_currentStep prev $prev");
+      if (prev != null) {
+        if (steps[prev].disabled) {
+          _currentStep = prev;
+          continue;
+        } else {
+          step.value = prev;
+          break;
+        }
+      } else {
+        break;
+      }
     }
 
-    return Future.value(last != step.value);
+    return _currentStep != step.value;
   }
 
-  void selectProfile(ProfileType profile) {
-    profileType.value = profile;
-    next();
-  }
-
-  void register({String email, String password}) {
-    user.update((v) {
-      v.email = email;
-      v.password = password;
-    });
-
-    loading.value = true;
-    userService
-        .register(email: user.value.email, password: user.value.password)
-        .then((_) {
+  void submit() async {
+    if (profileType.value == ProfileType.Customer) {
+      loading.value = true;
+      try {
+        await jobController.submit();
+        appController.profileType.value = ProfileType.Customer;
+        userController.user.refresh();
+        next();
+      } catch(error) {
+        throw error;
+      }
       loading.value = false;
-      next();
-    }).catchError((error) {
+    } else {
+      loading.value = true;
+      try {
+        await mechanicController.submit();
+        appController.profileType.value = ProfileType.Mechanic;
+        userController.user.refresh();
+        next();
+      } catch(error) {
+        throw error;
+      }
       loading.value = false;
-    });
+    }
   }
-
-  void selectVehicle(VehicleTree vehicle) {}
 }

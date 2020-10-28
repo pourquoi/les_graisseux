@@ -3,7 +3,9 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\JobRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -21,7 +23,7 @@ use App\Dto\Job\JobInput;
  *         "post"={
  *             "method"="POST",
  *             "security"="is_granted('ROLE_CUSTOMER')",
- *             "security_post_denormalize"="is_granted('JOB_CREATE', object)",
+ *             "security_post_denormalize"="is_granted('CREATE_JOB', object)",
  *             "input"=JobInput::class
  *         }
  *     },
@@ -29,12 +31,13 @@ use App\Dto\Job\JobInput;
  *         "get",
  *         "put"={
  *             "method"="PUT",
- *             "security"="is_granted('JOB_EDIT', object)",
+ *             "security"="is_granted('EDIT_JOB', object)",
  *             "input"=JobInput::class
  *         }
  *     }
  * )
  * @ORM\Entity(repositoryClass=JobRepository::class)
+ * @ApiFilter(SearchFilter::class, properties={"customer.user"})
  * @ApiFilter(JobDistanceFilter::class, properties={"address.geocoordinates"})
  */
 class Job
@@ -45,6 +48,8 @@ class Job
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(writable=false)
+     * @Groups({"read", "write"})
      */
     protected $id;
 
@@ -64,7 +69,7 @@ class Job
      * @ORM\Column(type="boolean", nullable=true)
      * @Groups({"read", "write"})
      */
-    protected $immobilized;
+    protected $immobilized = false;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -95,7 +100,7 @@ class Job
 
     /**
      * @var CustomerVehicle
-     * @ORM\ManyToOne(targetEntity="CustomerVehicle")
+     * @ORM\ManyToOne(targetEntity="CustomerVehicle", cascade={"persist"})
      * @Groups({"job:read"})
      */
     protected $vehicle;
@@ -104,6 +109,7 @@ class Job
      * @var Address
      * @ORM\ManyToOne(targetEntity="Address", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"job:read"})
      */
     protected $address;
 
@@ -172,12 +178,12 @@ class Job
         return $this;
     }
 
-    public function getVehicle(): CustomerVehicle
+    public function getVehicle(): ?CustomerVehicle
     {
         return $this->vehicle;
     }
 
-    public function setVehicle(CustomerVehicle $vehicle): self
+    public function setVehicle(?CustomerVehicle $vehicle): self
     {
         $this->vehicle = $vehicle;
         return $this;

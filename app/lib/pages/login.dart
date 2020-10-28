@@ -1,14 +1,15 @@
+import 'package:app/controllers/user.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:app/routes.dart' as routes;
 import 'package:app/controllers/app.dart';
-import 'package:app/services/user.dart';
+import 'package:app/services/endpoints/user.dart';
 
 class LoginPage extends StatefulWidget
 {
   final AppController appController = Get.find();
-  final UserService userService = Get.find();
+  final UserController userController = Get.find();
   
   _LoginPageState createState() => _LoginPageState();
 }
@@ -17,8 +18,8 @@ class _LoginPageState extends State<LoginPage>
 {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController(text: 'alice@example.com');
+  final TextEditingController _passwordController = TextEditingController(text: 'pass1234');
 
   void dispose() {
     _emailController.dispose();
@@ -28,7 +29,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void login() {
-    widget.userService.login(email: _emailController.text, password: _passwordController.text).then((user) {
+    widget.userController.login(email: _emailController.text, password: _passwordController.text).then((user) {
       Get.toNamed(routes.home);
     });
   }
@@ -60,7 +61,7 @@ class _LoginPageState extends State<LoginPage>
                     obscureText: true,
                   ),
                   Obx(() {
-                    if (widget.userService.loading.value) {
+                    if (widget.userController.loading.value) {
                       return CircularProgressIndicator();
                     } else {
                       return RaisedButton(

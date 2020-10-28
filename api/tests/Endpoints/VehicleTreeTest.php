@@ -24,6 +24,9 @@ class VehicleTreeTest extends Base
     public function testPostVehicle(): void
     {
         $client = static::createClient();
+
+        self::login($client, 'admin@example.com', 'pass1234');
+
         $response = $client->request('POST', '/api/vehicles', ['json'=>[
             'level' => 'brand',
             'name' => 'Alfa Romeo'
@@ -63,6 +66,8 @@ class VehicleTreeTest extends Base
     public function testPostFullVehicle(): void
     {
         $client = static::createClient();
+
+        self::login($client, 'admin@example.com', 'pass1234');
 
         $container = self::$kernel->getContainer();
         $energy = $container->get('doctrine')->getRepository(Energy::class)->findAll()[0];

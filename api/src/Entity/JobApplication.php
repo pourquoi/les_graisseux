@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\JobApplicationRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -40,6 +41,8 @@ class JobApplication
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     private $id;
 

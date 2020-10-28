@@ -13,7 +13,7 @@ class PaginatedQueryParameters {
 
   Map<String, dynamic> toJson() {
     return {
-      'q': q,
+      'q': q == '' ? null : q,
       'page': page,
       'itemsPerPage': itemsPerPage
     }..removeWhere((key, value) => value == null);
@@ -21,31 +21,29 @@ class PaginatedQueryParameters {
 }
 
 class PaginatedQueryResponse<T> {
-  List<T> items;
-  int total;
+  List<T> items = List<T>();
+  int total = 0;
+  String first;
+  String next;
+  String last;
 }
 
-abstract class CrudService<T> extends GetxService {
+class CrudService<T> extends GetxService {
   ApiService api;
   String resource;
 
-  CrudService({@required this.resource});
-
-  void onInit() {
+  CrudService({@required this.resource, @required this.fromJson, @required this.toJson}) {
     api = Get.find<ApiService>();
   }
 
-  T fromJson(data);
+  T Function(Map<String, dynamic>) fromJson;
+  Map<String, dynamic> Function(T) toJson;
 
-  Future<PaginatedQueryResponse<T>> search(PaginatedQueryParameters params) {
+  PaginatedQueryResponse<T> _parseJsonList(Map<String, dynamic> data) {
+    print('CrudService._parseJsonList');
+    print(data);
 
-    if (params == null) params = PaginatedQueryParameters();
-
-    return api.get('/api/$resource', queryParameters: params.toJson()).then((data) {
-
-      print(data['hydra:member']);
-
-      PaginatedQueryResponse<T> qr = PaginatedQueryResponse<T>();
+    PaginatedQueryResponse<T> qr = PaginatedQueryResponse<T>();
 
       qr.items = data['hydra:member']
           .toList()
@@ -53,13 +51,45 @@ abstract class CrudService<T> extends GetxService {
           .toList()
           .cast<T>();
       qr.total = data['hydra:totalItems'];
+      
+      if (data.containsKey('hydra:view')) {
+        Map<String, dynamic> hydraView = (data['hydra:view'] as Map<String, dynamic>);
+        if (hydraView.containsKey('hydra:next')) qr.next = hydraView['hydra:next'];
+        if (hydraView.containsKey('hydra:first')) qr.first = hydraView['hydra:next'];
+        if (hydraView.containsKey('hydra:last')) qr.last = hydraView['hydra:last'];
+      }
 
       return qr;
-    });
   }
+
+  Future<PaginatedQueryResponse<T>> search(PaginatedQueryParameters params) {
+    print('CrudService.search');
+    print(params.toJson());
+
+    return api.get('/api/$resource', queryParameters: params.toJson()..removeWhere((key, value) => value == null)).then((data) => _parseJsonList(data));
+  }
+
+  Future<PaginatedQueryResponse<T>> next(PaginatedQueryResponse response) => api.get(response.next).then((data) => _parseJsonList(data));
+  Future<PaginatedQueryResponse<T>> last(PaginatedQueryResponse response) => api.get(response.last).then((data) => _parseJsonList(data));
+  Future<PaginatedQueryResponse<T>> first(PaginatedQueryResponse response) => api.get(response.first).then((data) => _parseJsonList(data));
 
   Future<T> get(dynamic id) {
     return api.get('/api/$resource/$id').then((data) {
+      print(data);
+      return fromJson(data);
+    });
+  }
+
+  Future<T> post(T res) {
+    return api.post('/api/$resource', data:toJson(res)..removeWhere((key, value) => value == null)).then((data) {
+      print(data);
+      return fromJson(data);
+    });
+  }
+
+  Future<T> put(dynamic id, T res) {
+    return api.put('/api/$resource/${id}', data:toJson(res)..removeWhere((key, value) => value == null)).then((data) {
+      print(data);
       return fromJson(data);
     });
   }

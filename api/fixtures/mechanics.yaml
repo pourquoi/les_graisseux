@@ -2,10 +2,20 @@ App\Entity\Mechanic:
   mechanicbob:
     user: '@bob'
     about: <text()>
-    __calls:
-      - addService: ['@service_clean_exterior', '@service_oilchange']
   mechanicroger:
     user: '@roger'
     about: <text()>
-    __calls:
-      - addService: ['@service_breaks', '@service_tools']
+
+App\Entity\MechanicService:
+  bobservice1:
+    skill: 5
+    mechanic: '@mechanicbob'
+    service: '@service_clean_exterior'
+  bobservice2:
+    skill: 5
+    mechanic: '@mechanicbob'
+    service: '@service_oilchange'
+    vehicle: '@mercedes'
+  rogerservice1:
+    skill: 4
+    mechanic: '@mechanicroger'

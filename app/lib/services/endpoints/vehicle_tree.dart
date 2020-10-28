@@ -10,13 +10,12 @@ class VehicleTreeQueryParameters extends PaginatedQueryParameters {
 
   Map<String, dynamic> toJson() {
     return super.toJson()..addAll({
-      'level': level
+      'name': q,
+      'level': level == '' ? null : level
     });
   }
 }
 
 class VehicleTreeService extends CrudService<VehicleTree> {
-  VehicleTreeService() : super(resource: 'vehicles');
-
-  VehicleTree fromJson(m) => VehicleTree.fromJson(m);
+  VehicleTreeService() : super(resource: 'vehicles', fromJson: (data) => VehicleTree.fromJson(data), toJson: (vehicle) => vehicle.toJson());
 }

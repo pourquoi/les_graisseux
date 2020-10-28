@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Entity\Translation\EnergyTranslation;
 use App\Repository\EnergyRepository;
@@ -21,13 +22,14 @@ class Energy extends AbstractTranslatable
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"energy:read"})
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     private $id;
 
     /**
      * @var string
-     * @Groups({"energy:read"})
+     * @Groups({"read"})
      */
     private $name;
 

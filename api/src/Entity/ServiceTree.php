@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Entity\Translation\ServiceTranslation;
@@ -18,17 +19,23 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 /**
  * @ApiResource(
  *     shortName="Service",
- *     attributes={
- *       "normalization_context"={"groups"={"service:read"}},
- *       "denormalization_context"={"groups"={"service:write"}}
- *     },
+ *     normalizationContext={"groups"={"read", "service:read"}},
+ *     denormalizationContext={"groups"={"write", "service:write"}},
  *     itemOperations={
  *       "get",
- *       "put"={ "method"="PUT", "normalization_context"={"groups"={"service:read", "translations"}} }
+ *       "put"={
+ *         "method"="PUT",
+ *         "normalization_context"={"groups"={"write", "service:write", "translations"}},
+ *         "security"="is_granted('ROLE_ADMIN')"
+ *       }
  *     },
  *     collectionOperations={
  *       "get",
- *       "post"={ "method"="POST", "normalization_context"={"groups"={"service:read", "translations"}}}
+ *       "post"={
+ *           "method"="POST",
+ *           "normalization_context"={"groups"={"write", "service:write", "translations"}},
+ *           "security_post_denormalize"="is_granted('ROLE_ADMIN')"
+ *       }
  *     }
  * )
  * @ApiFilter(SearchFilter::class, properties={"translations.label": "word_start"})
@@ -42,21 +49,22 @@ class ServiceTree extends AbstractTranslatable
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"service:read"})
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
-    private $id;
+    protected $id;
+
+    /**
+     * @var string
+     * @Groups({"read"})
+     */
+    protected $label;
 
     /**
      * @var string
      * @Groups({"service:read"})
      */
-    private $label;
-
-    /**
-     * @var string
-     * @Groups({"service:read"})
-     */
-    private $description;
+    protected $description;
 
     /**
      * @var Collection|ServiceTree[]
@@ -69,7 +77,7 @@ class ServiceTree extends AbstractTranslatable
     /**
      * @var ServiceTree
      * @ORM\ManyToOne(targetEntity="ServiceTree", inversedBy="children")
-     * @Groups({"service:read", "service:write"})
+     * @Groups({"read", "service:write"})
      */
     protected $parent;
 

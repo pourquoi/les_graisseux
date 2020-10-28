@@ -37,7 +37,7 @@ class ChatTest extends Base
 
         self::login($client, 'roger@example.com', 'pass1234');
         $response = $client->request('POST', '/api/chat_rooms', ['json'=>[
-            'to' => $bob->getId(),
+            'to' => '/api/users/' . $bob->getId(),
             'message' => 'Hey'
         ]]);
         $this->assertResponseIsSuccessful();
@@ -53,10 +53,10 @@ class ChatTest extends Base
         $response = $client->request('GET', '/api/chat_rooms?page=1');
         $json = json_decode($response->getContent(), true);
 
-        $uuid = $json['hydra:member'][0]['uuid'];
+        $room = $json['hydra:member'][0];
 
         $response = $client->request('POST', '/api/chat_messages', ['json'=>[
-            'room' => $uuid,
+            'room' => $room['@id'],
             'message' => 'Hey'
         ]]);
         $this->assertResponseIsSuccessful();

@@ -34,7 +34,7 @@ class CustomerProfileDataTransformer implements DataTransformerInterface
     public function transform($profile, string $to, array $context = [])
     {
         if ($profile->user && $this->security->isGranted('ROLE_ADMIN')) {
-            $user = $this->userRepository->find($profile->user);
+            $user = $profile->user;
         } else {
             $user = $this->security->getUser();
         }
@@ -43,7 +43,7 @@ class CustomerProfileDataTransformer implements DataTransformerInterface
             throw new \InvalidArgumentException(sprintf('Error creating customer: user %d not found', $profile->user));
 
         if ($user->getCustomer()) {
-            $customer = $user->getMechanic();
+            $customer = $user->getCustomer();
         } else {
             $customer = new Customer();
             $customer->setUser($user);

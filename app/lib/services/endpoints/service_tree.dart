@@ -14,7 +14,5 @@ class ServiceTreeQueryParameters extends PaginatedQueryParameters {
 }
 
 class ServiceTreeService extends CrudService<ServiceTree> {
-  ServiceTreeService() : super(resource: 'services');
-
-  ServiceTree fromJson(m) => ServiceTree.fromJson(m);
+  ServiceTreeService() : super(resource: 'services', fromJson: (data) => ServiceTree.fromJson(data), toJson: (service) => service.toJson());
 }

@@ -1,3 +1,4 @@
+import 'package:app/models/address.dart';
 import 'package:app/models/common.dart';
 import 'package:app/models/customer.dart';
 import 'package:app/models/customer_vehicle.dart';
@@ -9,14 +10,30 @@ class Job extends HydraResource {
   String description;
 
   Customer customer;
-  List<ServiceTree> tasks;
+  List<ServiceTree> tasks = List<ServiceTree>();
   CustomerVehicle vehicle;
+
+  Address address;
 
   Job({this.id, this.customer, this.vehicle});
 
-  Job.fromJson(Map<String, dynamic> json,
-      {Map<String, dynamic> context}) {
+  Job.fromJson(Map<String, dynamic> json, {Map<String, dynamic> context}) { 
+    parseJson(json, context:context); 
+  }
+
+  void addTask(ServiceTree task) {
+    if (tasks.where((t) => t.id != null && t.id == task.id).isEmpty) {
+      tasks.add(task);
+    }
+  }
+
+  void removeTask(ServiceTree task) {
+    tasks.removeWhere((t) => t.id != null && t.id == task.id);
+  }
+
+  void parseJson(Map<String, dynamic> json, {Map<String, dynamic> context}) {
     if (context == null) context = initContext();
+    super.parseJson(json, context: context);
 
     id = json['id'];
     title = json['title'];
@@ -61,5 +78,30 @@ class Job extends HydraResource {
           .cast<ServiceTree>();
     }
 
+    if (json.containsKey('address') && json['address'] != null) {
+      address = Address.fromJson(json['address'], context: context);
+    }
+  }
+
+  Map<String, dynamic> toJson({Map<String, dynamic> context}) {
+    if (context == null) context = {};
+
+    Map<String, dynamic> data = {
+      'id': id,
+      'title': title,
+      'description': description,
+      'tasks': tasks.map((task) => task.hydraId).toList(),
+      'address': address == null ? null : address.toJson(context: context)
+    };
+
+    if (customer != null) {
+      data['customer'] = customer.toJson(context: context);
+    }
+
+    if (vehicle != null) {
+      data['vehicle'] = vehicle.toJson(context: context);
+    }
+
+    return data..addAll(super.toJson(context: context));
   }
 }

@@ -36,7 +36,7 @@ class MechanicProfileDataTransformer implements DataTransformerInterface
     public function transform($profile, string $to, array $context = [])
     {
         if ($profile->user && $this->security->isGranted('ROLE_ADMIN')) {
-            $user = $this->userRepository->find($profile->user);
+            $user = $profile->user;
         } else {
             $user = $this->security->getUser();
         }
@@ -55,13 +55,15 @@ class MechanicProfileDataTransformer implements DataTransformerInterface
 
         if (null !== $profile->services) {
             $mechanic->getServices()->clear();
-
-            if (count($profile->services)) {
-                $services = $this->serviceRepository->findAllByIds($profile->services);
-                foreach($services as $service) {
+            if(count($profile->services) > 0) {
+                foreach ($profile->services as $service) {
                     $mechanic->addService($service);
                 }
             }
+        }
+
+        if ($profile->address) {
+            $user->setAddress(clone $profile->address);
         }
 
         return $mechanic;

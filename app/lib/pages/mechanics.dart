@@ -26,7 +26,7 @@ class MechanicsPage extends StatelessWidget
                       },
                       child: Padding(
                         padding: EdgeInsets.all(24.0),
-                        child: Text('${idx}' + (controller.items[idx].user.email ?? '-'), style: TextStyle(fontSize: 20))
+                        child: Text('${idx}' + (controller.items[idx].user.username ?? '-'), style: TextStyle(fontSize: 20))
                       )
                   );
                 },

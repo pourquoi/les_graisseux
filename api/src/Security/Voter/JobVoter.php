@@ -44,7 +44,7 @@ class JobVoter extends Voter
             case 'CREATE_JOB':
             case 'EDIT_JOB':
             case 'DELETE_JOB';
-                return $current_user->isAdmin() || $current_user->getId() == $job->getCustomer()->getId();
+                return $current_user->isAdmin() || $current_user->getId() == $job->getCustomer()->getUser()->getId();
         }
     }
 

@@ -5,6 +5,7 @@ import 'package:app/services/crud_service.dart';
 class JobQueryParameters extends PaginatedQueryParameters {
   Geocoordinate geocoordinate;
   int distance;
+  dynamic user;
 
   JobQueryParameters({this.geocoordinate, this.distance, String q, int page, int itemsPerPage}) : super(q: q, page: page, itemsPerPage: itemsPerPage);
 
@@ -13,12 +14,13 @@ class JobQueryParameters extends PaginatedQueryParameters {
     if (geocoordinate != null && distance != null) {
       params['distance'] = '${geocoordinate.latitude},${geocoordinate.longitude},$distance';
     }
+    if (user != null) {
+      params['customer.user'] = user;
+    }
     return params;
   }
 }
 
 class JobService extends CrudService<Job> {
-  JobService() : super(resource: 'jobs');
-
-  Job fromJson(m) => Job.fromJson(m);
+  JobService() : super(resource: 'jobs', fromJson: (data) => Job.fromJson(data), toJson: (job) => job.toJson());
 }

@@ -13,14 +13,18 @@ class MechanicPage extends StatelessWidget
 
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Obx(() {
-            if( controller.current.value.id != null ) {
-              return Text(controller.current.value.user.email ?? '?');
-            } else {
-              return CircularProgressIndicator();
-            }
-          })
+        child: Stack(
+          children: <Widget>[
+            Center(
+              child: Obx(() {
+                if( controller.current.value.id != null ) {
+                  return Text(controller.current.value.user.username ?? '?');
+                } else {
+                  return CircularProgressIndicator();
+                }
+              })
+            )
+          ]
         )
       )
     );

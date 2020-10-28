@@ -10,6 +10,7 @@ parameters:
     router.request_context.base_url: '%env(BASE_URL)'
     asset.request_context.base_path: '%router.request_context.base_url%'
     asset.request_context.secure: true
+    kernel.default_locale: fr
 
 services:
     # default configuration for services in *this* file

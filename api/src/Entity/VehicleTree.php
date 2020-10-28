@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\VehicleTreeRepository;
@@ -15,8 +16,24 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ApiResource(
  *     shortName="Vehicle",
- *     normalizationContext={"groups"={"vehicle:read", "energy:read"}},
- *     denormalizationContext={"groups"={"vehicle:write", "energy:write"}}
+ *     normalizationContext={"groups"={"read", "vehicle:read", "energy:read"}},
+ *     denormalizationContext={"groups"={"write", "vehicle:write", "energy:write"}},
+ *     itemOperations={
+ *       "get",
+ *       "put"={
+ *         "method"="PUT",
+ *         "normalization_context"={"groups"={"write", "vehicle:write", "translations"}},
+ *         "security"="is_granted('ROLE_ADMIN')"
+ *       }
+ *     },
+ *     collectionOperations={
+ *       "get",
+ *       "post"={
+ *           "method"="POST",
+ *           "normalization_context"={"groups"={"write", "vehicle:write", "translations"}},
+ *           "security_post_denormalize"="is_granted('ROLE_ADMIN')"
+ *       }
+ *     }
  * )
  * @ApiFilter(SearchFilter::class, properties={"level": "exact", "name": "word_start", "energy.id": "exact", "energy.translations.name": "word_start"})
  * @ORM\Entity(repositoryClass=VehicleTreeRepository::class)
@@ -35,35 +52,36 @@ class VehicleTree
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"vehicle:read"})
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     protected $id;
 
     /**
      * @var string
      * @ORM\Column()
-     * @Groups({"vehicle:read", "vehicle:write"})
+     * @Groups({"read", "write"})
      */
     protected $level;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=255)
-     * @Groups({"vehicle:read", "vehicle:write"})
+     * @Groups({"read", "write"})
      */
     protected $name;
 
     /**
      * @var Energy
      * @ORM\ManyToOne(targetEntity="Energy", cascade={"persist"})
-     * @Groups({"vehicle:read", "vehicle:write"})
+     * @Groups({"read", "write"})
      */
     protected $energy;
 
     /**
      * @var \DateTime
      * @ORM\Column(type="date", nullable=true)
-     * @Groups({"vehicle:read", "vehicle:write"})
+     * @Groups({"read", "write"})
      */
     private $release_date;
 
@@ -79,7 +97,6 @@ class VehicleTree
      * @var Collection|VehicleTree[]
      * @ORM\OneToMany(targetEntity="VehicleTree", mappedBy="parent", cascade={"persist", "remove"})
      * @ApiSubresource()
-     * @Groups({"vehicle:read"})
      */
     protected $children;
 

@@ -57,6 +57,8 @@ class UserTest extends Base
         $token = $response->toArray();
         $this->arrayHasKey('token');
         $this->assertNotEmpty($token['token']);
+        $this->arrayHasKey('uid');
+        $this->assertNotEmpty($token['uid']);
 
         $response = $client->request( 'POST', '/authentication_token', ['json' => [
             'email' => 'unverified@example.com',

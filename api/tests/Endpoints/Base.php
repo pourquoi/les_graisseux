@@ -23,6 +23,6 @@ abstract class Base extends ApiTestCase
             'Authorization' => 'Bearer ' . $token
         ]]);
 
-        return $token;
+        return $response->toArray();
     }
 }

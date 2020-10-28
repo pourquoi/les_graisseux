@@ -2,8 +2,9 @@ import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:app/services/api.dart';
-import 'package:app/services/service_tree.dart';
+import 'package:app/services/endpoints/service_tree.dart';
 import 'package:app/models/service_tree.dart';
+import 'package:app/services/crud_service.dart';
 
 class MockApi extends Mock implements ApiService {}
 
@@ -44,7 +45,7 @@ void main() {
             });
 
     expect(
-        service.search().then((PaginatedQueryResponse<ServiceTree> r) {
+        service.search(PaginatedQueryParameters()).then((PaginatedQueryResponse<ServiceTree> r) {
           expect(r.total, 2);
         }),
         completes);

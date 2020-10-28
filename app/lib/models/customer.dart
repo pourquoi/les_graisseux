@@ -9,9 +9,14 @@ class Customer extends HydraResource {
 
   Customer({this.id, this.user});
 
-  Customer.fromJson(Map<String, dynamic> json,
+  Customer.fromJson(Map<String, dynamic> json, {Map<String, dynamic> context}) {
+    parseJson(json, context: context); 
+  }
+
+  void parseJson(Map<String, dynamic> json,
       {Map<String, dynamic> context}) {
     if (context == null) context = initContext();
+    super.parseJson(json, context: context);
 
     id = json['id'];
 

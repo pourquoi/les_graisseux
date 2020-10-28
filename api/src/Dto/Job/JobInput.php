@@ -2,8 +2,13 @@
 
 namespace App\Dto\Job;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use App\Entity\Address;
+use App\Entity\Customer;
+use App\Entity\CustomerVehicle;
+use App\Entity\ServiceTree;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class JobInput
 {
@@ -21,9 +26,10 @@ class JobInput
 
     /**
      * @var bool
+     * @ApiProperty(required=false)
      * @Groups({"write"})
      */
-    public $immobilized;
+    public $immobilized = false;
 
     /**
      * @var int
@@ -38,19 +44,21 @@ class JobInput
     public $urgent = false;
 
     /**
-     * @var array
+     * @var ServiceTree[]
      * @Groups({"write"})
      */
     public $tasks;
 
     /**
-     * @var int
+     * @var Customer
+     * @ApiProperty(required=false)
      * @Groups({"write"})
      */
     public $customer;
 
     /**
-     * @var int
+     * @var CustomerVehicle
+     * @ApiProperty(required=false)
      * @Groups({"write"})
      */
     public $vehicle;
@@ -58,6 +66,8 @@ class JobInput
     /**
      * @var Address
      * @Groups({"write"})
+     * @Assert\NotNull()
+     * @Assert\Valid()
      */
     public $address;
 }

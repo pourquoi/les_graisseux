@@ -13,7 +13,7 @@ class CustomerTest extends Base
     {
         $response = static::createClient()->request('GET', '/api/customers?page=1');
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['hydra:totalItems' => 1]);
+        $this->assertJsonContains(['hydra:totalItems' => 11]);
 
         $json = json_decode($response->getContent(), true);
         $customer = $json['hydra:member'][0];

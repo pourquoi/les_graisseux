@@ -1,4 +1,4 @@
-import 'package:app/services/service_tree.dart';
+import 'package:app/services/endpoints/service_tree.dart';
 import 'package:get/state_manager.dart';
 
 class ServicesController extends GetxController {

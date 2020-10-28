@@ -1,1 +1,2 @@
 final String API_HOST = 'http://127.0.0.1';
+final String GOOGLE_PLACE_API_KEY = 'sdfsdfsdf';

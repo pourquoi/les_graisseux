@@ -4,7 +4,7 @@ import 'package:get/instance_manager.dart';
 import 'package:get/state_manager.dart';
 
 import 'package:app/controllers/vehicles.dart';
-import 'package:app/services/vehicle_tree.dart';
+import 'package:app/services/endpoints/vehicle_tree.dart';
 
 class VehiclePicker extends StatefulWidget {
   final VehiclesController controller = Get.put(VehiclesController());

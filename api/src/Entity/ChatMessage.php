@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ChatMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,6 +37,7 @@ class ChatMessage
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(writable=false)
      */
     private $id;
 

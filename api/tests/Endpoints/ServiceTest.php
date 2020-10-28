@@ -23,6 +23,8 @@ class ServiceTest extends Base
     {
         $client = static::createClient();
 
+        self::login($client, 'admin@example.com', 'pass1234');
+
         $response = $client->request('POST', '/api/services', ['json' => [
             'translations' => [
                 'fr' => [

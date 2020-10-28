@@ -1,3 +1,4 @@
+import 'package:app/controllers/user.dart';
 import 'package:app/pages/login.dart';
 import 'package:app/widgets/ui/drawer.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,7 @@ import 'package:get/get.dart';
 
 import 'package:app/routes.dart' as routes;
 import 'package:app/controllers/app.dart';
-import 'package:app/services/user.dart';
+import 'package:app/services/endpoints/user.dart';
 
 class Destination {
   Destination(this.index, this.title, this.icon, this.color, this.builder);
@@ -104,7 +105,7 @@ class _DestinationViewState extends State<DestinationView> {
 
 class HomePageFeed extends StatelessWidget
 {
-  final UserService userService = Get.find();
+  final UserController userController = Get.find();
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,7 +114,7 @@ class HomePageFeed extends StatelessWidget
       body: Column(
         children: [
           Obx(() {
-            if (userService.status.value != UserStatus.loggedin) {
+            if (userController.status.value != UserStatus.loggedin) {
               return RaisedButton(
                 onPressed: () => Get.toNamed(routes.login), 
                 child: Text('login')
@@ -121,13 +122,13 @@ class HomePageFeed extends StatelessWidget
             } else {
               return Row(
                 children: [
-                  Text(userService.user.value.email ?? '?'),
+                  Text(userController.user.value.email ?? '?'),
                   RaisedButton(
                     onPressed: () => Get.toNamed(routes.onboarding),
                     child: Text('onboarding')
                   ),
                   RaisedButton(
-                    onPressed: () => userService.logout(), 
+                    onPressed: () => userController.logout(), 
                     child: Text('logout')
                   )
                 ]
@@ -142,7 +143,7 @@ class HomePageFeed extends StatelessWidget
 
 class HomePage extends StatefulWidget {
   final AppController appController = Get.find();
-  final UserService userService = Get.find();
+  final UserController userController = Get.find();
 
   _HomePageState createState() => _HomePageState();
 }

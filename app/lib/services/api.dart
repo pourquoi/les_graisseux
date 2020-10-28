@@ -18,11 +18,8 @@ class ApiService extends GetxService {
     _dio.transformer = ApiTransformer();
   }
 
-  Future<ApiService> init() async {
-    return this;
-  }
-
   Future<T> get<T>(path, {Map<String, dynamic> queryParameters}) {
+    print(path);
     return _dio
       .get<dynamic>(path, queryParameters: queryParameters)
       .then((response) {
@@ -47,9 +44,11 @@ class ApiService extends GetxService {
 
   Future<T> _post<T>(String method, path,
       {dynamic data, Map<String, dynamic> queryParameters}) {
+        print('$method $path');
+        print(data);
     String payload = json.encode(data);
     return _dio
-        .post<dynamic>(path,
+        .request<dynamic>(path,
             data: payload,
             queryParameters: queryParameters,
             options: Options(method: method))
@@ -72,12 +71,17 @@ class ApiService extends GetxService {
             options.headers['Authorization'] = "Bearer ${token.value}";
           else if (options.headers.containsKey('Authorization'))
             options.headers.remove('Authorization');
+
+          print(options.headers);
         },
         onResponse: (Response response) async {},
         onError: (DioError e) async {
-          if (e.response.statusCode == 401) {}
+          if (e.response != null) {
+            if (e.response.statusCode == 401) {}
+          }
           return e;
         });
+    _dio.interceptors.add(_authInterceptor);
   }
 
   Dio get dio => _dio;

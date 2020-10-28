@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\UserRepository;
@@ -27,13 +28,8 @@ use App\Dto\User as UserDto;
  *     itemOperations={
  *          "get",
  *          "put" = { "security" = "is_granted('EDIT_USER', object)" },
- *          "patch" = { "security" = "is_granted('EDIT_USER', object)" },
- *          "delete" = { "security" = "is_granted('DELETE_USER', object)" },
- *          "edit_address" = {
- *              "method" = "PUT",
- *              "security" = "is_granted('EDIT_USER', object)",
- *              "normalizationContext" = {"groups"={"read", "address:write"}}
- *          }
+ *          "patch" = { "security" = "is_granted('EDIT_USER', object)", "denormalizationContext"={"groups"={"write", "user:edit"}} },
+ *          "delete" = { "security" = "is_granted('DELETE_USER', object)" }
  *     },
  * )
  *
@@ -49,6 +45,8 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read", "write"})
+     * @ApiProperty(writable=false)
      */
     protected $id;
 
@@ -79,20 +77,20 @@ class User implements UserInterface
     /**
      * @var string
      * @ORM\Column(type="string", nullable=true)
-     * @Groups({"read", "write"})
+     * @Groups({"read", "write", "user:edit"})
      */
     protected $username;
 
     /**
      * @var Mechanic
-     * @ORM\OneToOne(targetEntity="Mechanic", mappedBy="user")
+     * @ORM\OneToOne(targetEntity="Mechanic", mappedBy="user", cascade={"persist", "remove"})
      * @Groups({"user:read"})
      */
     protected $mechanic;
 
     /**
      * @var Customer
-     * @ORM\OneToOne(targetEntity="Customer", mappedBy="user")
+     * @ORM\OneToOne(targetEntity="Customer", mappedBy="user", cascade={"persist", "remove"})
      * @Groups({"user:read"})
      */
     protected $customer;
@@ -106,8 +104,8 @@ class User implements UserInterface
 
     /**
      * @var Address
-     * @ORM\ManyToOne(targetEntity="Address")
-     * @Groups({"read", "write", "address:write"})
+     * @ORM\ManyToOne(targetEntity="Address", cascade={"persist"})
+     * @Groups({"read", "write", "user:edit"})
      */
     protected $address;
 
@@ -149,7 +147,7 @@ class User implements UserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $roles = [];
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 

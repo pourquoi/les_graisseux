@@ -4,14 +4,20 @@ import 'package:app/models/vehicle_tree.dart';
 
 class CustomerVehicle extends HydraResource {
   int id;
+
+  int km;
   Customer customer;
   VehicleTree type;
 
   CustomerVehicle({this.id, this.customer, this.type});
 
-  CustomerVehicle.fromJson(Map<String, dynamic> json,
-      {Map<String, dynamic> context}) {
+  CustomerVehicle.fromJson(Map<String, dynamic> json, {Map<String, dynamic> context}) { 
+    parseJson(json, context: context); 
+  }
+
+  void parseJson(Map<String, dynamic> json, {Map<String, dynamic> context}) {
     if (context == null) context = initContext();
+    super.parseJson(json, context: context);
 
     id = json['id'];
 
@@ -36,5 +42,20 @@ class CustomerVehicle extends HydraResource {
         type = VehicleTree.fromJson(json['type'], context: context);
       }
     }
+  }
+
+  Map<String, dynamic> toJson({Map<String, dynamic> context}) {
+    Map<String, dynamic> data = {
+      'km': km
+    };
+    
+    if (customer != null) {
+      data['customer'] = customer.hydraId;
+    }
+    if (type != null) {
+      data['type'] = type.hydraId;
+    }
+
+    return data..addAll(super.toJson(context: context));
   }
 }

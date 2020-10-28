@@ -1,5 +1,5 @@
 import 'package:get/state_manager.dart';
-import 'package:app/services/vehicle_tree.dart';
+import 'package:app/services/endpoints/vehicle_tree.dart';
 
 class VehiclesController extends GetxController {
   VehicleTreeService vehicleTreeService;
@@ -16,7 +16,7 @@ class VehiclesController extends GetxController {
 
   void search({String q, VehicleTreeLevel level}) {
     loading.value = true;
-    vehicleTreeService.search(VehicleTreeQueryParameters(q: q)).then((response) {
+    vehicleTreeService.search(VehicleTreeQueryParameters(q: q, level: level.toString().split('.').last)).then((response) {
       items.value = response.items;
       loading.value = false;
     }).catchError((error) {

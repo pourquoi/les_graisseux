@@ -40,12 +40,8 @@ class CreateChatDataTransformer implements DataTransformerInterface
 
         $this->validator->validate($data);
 
-        if (null !== $data->from && ($this->security->isGranted('ROLE_ADMIN_BO') || null === $this->security->getUser())) {
-            $fromUser = $this->userRepository->find($data->from);
-
-            if (null === $fromUser) {
-                throw new \InvalidArgumentException(sprintf('Error creating chat: user %d not found', $data->from));
-            }
+        if (null !== $data->from && $data->from->getId() && ($this->security->isGranted('ROLE_ADMIN_BO') || null === $this->security->getUser())) {
+            $fromUser = $data->from;
         } else {
             $fromUser = $this->security->getUser();
         }
@@ -54,12 +50,8 @@ class CreateChatDataTransformer implements DataTransformerInterface
         $fromChatUser->setUser($fromUser);
 
         $toChatUser = null;
-        if ($data->to) {
-            $toUser = $this->userRepository->find($data->to);
-
-            if (null === $toUser) {
-                throw new \InvalidArgumentException(sprintf('Error creating chat: user %d not found', $data->to));
-            }
+        if ($data->to && $data->to->getId()) {
+            $toUser = $data->to;
 
             $toChatUser = new ChatUser();
             $toChatUser->setUser($toUser);
