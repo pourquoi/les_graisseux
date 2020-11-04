@@ -2,17 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\ChatMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Action\NotFoundAction;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Dto\Chat;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
+ *     normalizationContext={"groups"={"read", "chat_message:read"}},
+ *     denormalizationContext={"groups"={"write", "chat_message:write"}},
  *     collectionOperations={
- *         "get",
+ *         "get"={
+ *         },
+ *         "get_list"={
+ *             "method"="GET",
+ *             "path"="/chat_messages/feed",
+ *             "normalization_context"={"groups"={"read", "chat_message:read", "chat_message:list"}},
+ *         },
  *         "post": {
  *             "method"="POST",
  *             "security"="is_granted('ROLE_USER')",
@@ -20,14 +31,11 @@ use App\Dto\Chat;
  *         }
  *     },
  *     itemOperations={
- *         "get"={
- *             "controller"=NotFoundAction::class,
- *             "read"=false,
- *             "output"=false,
- *         },
+ *         "get"={},
  *     }
  * )
  * @ORM\Entity(repositoryClass=ChatMessageRepository::class)
+ * @ApiFilter(SearchFilter::class, properties={"room.uuid"})
  */
 class ChatMessage
 {
@@ -38,12 +46,14 @@ class ChatMessage
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      * @ApiProperty(writable=false)
+     * @Groups("read")
      */
     private $id;
 
     /**
      * @var string
      * @ORM\Column(type="text")
+     * @Groups("read")
      */
     protected $message;
 
@@ -51,6 +61,7 @@ class ChatMessage
      * @var ChatUser
      * @ORM\ManyToOne(targetEntity="ChatUser")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("read")
      */
     protected $user;
 
@@ -58,6 +69,7 @@ class ChatMessage
      * @var ChatRoom
      * @ORM\ManyToOne(targetEntity="ChatRoom")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("chat_message:list")
      */
     protected $room;
 

@@ -7,6 +7,7 @@ import 'package:app/pages/onboarding/step_job_services.dart';
 import 'package:app/pages/onboarding/step_job_vehicle.dart';
 import 'package:app/pages/onboarding/step_mechanic_services.dart';
 import 'package:app/pages/onboarding/step_profile.dart';
+import 'package:app/pages/onboarding/step_username.dart';
 import 'package:app/services/endpoints/user.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,6 +65,9 @@ class OnboardingPage extends StatelessWidget {
                           
                           case OnboardingStep.Account:
                             return StepAccount(key: Key('onboarding.account'));
+
+                          case OnboardingStep.Username:
+                            return StepUsername(key: Key('onboarding.username'));
 
                           case OnboardingStep.JobServices:
                             return StepJobServices(key: Key('onboarding.job_services'));

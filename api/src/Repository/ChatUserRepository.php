@@ -23,7 +23,7 @@ class ChatUserRepository extends ServiceEntityRepository
 
     public function findOneByRoomAndUser(ChatRoom $chatRoom, User $user)
     {
-        $this->createQueryBuilder('cu')
+        return $this->createQueryBuilder('cu')
                 ->andWhere('cu.user = :user')->setParameter('user', $user)
                 ->andWhere('cu.room = :room')->setParameter('room', $chatRoom)
                 ->getQuery()->getOneOrNullResult();

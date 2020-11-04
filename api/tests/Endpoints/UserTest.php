@@ -113,4 +113,16 @@ class UserTest extends Base
             $this->assertCount(1, $collector->getEvents()->getMessages());
         }
     }
+
+    public function testPatch(): void
+    {
+        $client = static::createClient();
+        $data = static::login($client, 'alice@example.com', 'pass1234');
+
+        $response = $client->request('PATCH', '/api/users/' . $data['uid'], ['headers'=>['content-type'=>'application/merge-patch+json'], 'json' => [
+            'username' => 'lapin'
+        ]]);
+
+        $this->assertResponseIsSuccessful();
+    }
 }

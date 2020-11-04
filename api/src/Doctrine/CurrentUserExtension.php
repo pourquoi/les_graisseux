@@ -5,7 +5,9 @@ namespace App\Doctrine;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use App\Entity\ChatMessage;
 use App\Entity\ChatRoom;
+use App\Entity\Job;
 use App\Entity\JobApplication;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
@@ -31,7 +33,12 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        $classes = [ChatRoom::class, JobApplication::class];
+        $classes = [
+            ChatRoom::class,
+            ChatMessage::class,
+            JobApplication::class,
+            Job::class
+        ];
 
         if (!in_array($resourceClass, $classes) || $this->security->isGranted('ROLE_ADMIN_BO') || null === $user = $this->security->getUser()) {
             return;
@@ -42,7 +49,14 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
         switch($resourceClass) {
             case ChatRoom::class:
                 $queryBuilder
-                    ->innerJoin(sprintf('%s.users', $rootAlias), 'chat_users')
+                    ->leftJoin(sprintf('%s.users', $rootAlias), 'chat_users')
+                    ->andWhere('chat_users.user = :user')
+                    ->setParameter('user', $this->security->getUser());
+                break;
+            case ChatMessage::class:
+                $queryBuilder
+                    ->innerJoin(sprintf('%s.room', $rootAlias), 'chat_room')
+                    ->leftJoin('chat_room.users', 'chat_users')
                     ->andWhere('chat_users.user = :user')
                     ->setParameter('user', $this->security->getUser());
                 break;
@@ -51,8 +65,10 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
                     ->innerJoin(sprintf('%s.mechanic', $rootAlias), 'm')
                     ->innerJoin(sprintf('%s.job', $rootAlias), 'j')
                     ->innerJoin('j.customer', 'c')
-                    ->where('c.user = :user OR m.user = :user')
+                    ->andWhere('c.user = :user OR m.user = :user')
                     ->setParameter('user', $this->security->getUser());
+                break;
+            case Job::class:
                 break;
         }
     }

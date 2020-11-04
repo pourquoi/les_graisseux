@@ -33,7 +33,7 @@ class UserNormalizer implements ContextAwareNormalizerInterface, NormalizerAware
         $current_user = $this->security->getUser();
 
         if ($this->security->isGranted('ROLE_ADMIN') || ($current_user instanceof User && $current_user->getId() == $object->getId())) {
-            $context['groups'][] = 'owner:user:read';
+            $context['groups'][] = '_owner:user:read';
         }
 
         $context[self::ALREADY_CALLED] = true;

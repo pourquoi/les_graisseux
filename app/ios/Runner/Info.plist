@@ -41,5 +41,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Pick profile, car and garage pictures</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Take profile, car and garage pictures</string>
 </dict>
 </plist>

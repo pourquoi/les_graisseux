@@ -2,6 +2,7 @@ import 'package:app/models/address.dart';
 import 'package:app/models/common.dart';
 import 'package:app/models/customer.dart';
 import 'package:app/models/customer_vehicle.dart';
+import 'package:app/models/job_application.dart';
 import 'package:app/models/service_tree.dart';
 
 class Job extends HydraResource {
@@ -14,6 +15,8 @@ class Job extends HydraResource {
   CustomerVehicle vehicle;
 
   Address address;
+
+  JobApplication application;
 
   Job({this.id, this.customer, this.vehicle});
 
@@ -61,6 +64,16 @@ class Job extends HydraResource {
       }
     }
 
+    if (json.containsKey('application') && json['application'] != null) {
+      if (json['application'] is String) {
+        application = context[CTX_MAP_BY_IDS].containsKey(json['application'])
+            ? context[CTX_MAP_BY_IDS][json['application']]
+            : null;
+      } else {
+        application = JobApplication.fromJson(json['application'], context: context);
+      }
+    }
+
     if (json.containsKey('tasks') && json['tasks'] != null) {
       tasks = json['tasks']
           .toList()
@@ -95,7 +108,7 @@ class Job extends HydraResource {
     };
 
     if (customer != null) {
-      data['customer'] = customer.toJson(context: context);
+      data['customer'] = customer.hydraId;
     }
 
     if (vehicle != null) {

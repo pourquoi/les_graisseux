@@ -1,4 +1,8 @@
+import 'package:app/controllers/account/chat.dart';
 import 'package:app/pages/account/profile.dart';
+import 'package:app/pages/chat/room.dart';
+import 'package:app/pages/chat/rooms.dart';
+import 'package:app/services/endpoints/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui' as ui;
@@ -30,9 +34,9 @@ import 'package:app/pages/account.dart';
 import 'package:app/pages/account/job.dart';
 import 'package:app/pages/account/jobs.dart';
 import 'package:app/pages/onboarding.dart';
+import 'package:intl/intl.dart';
 
 void main() async {
-  await Future.delayed(Duration(seconds: 2));
   runApp(MyAppBuilder());
 }
 
@@ -47,11 +51,17 @@ Future<dynamic> bootstrap() async {
   Get.lazyPut<MechanicService>(() => MechanicService());
   Get.lazyPut<JobService>(() => JobService());
   Get.lazyPut<CustomerService>(() => CustomerService());
+  Get.lazyPut<ChatRoomService>(() => ChatRoomService());
+  Get.lazyPut<ChatMessageService>(() => ChatMessageService());
+
+  AppController appController = Get.put(AppController());
 
   UserController userController = Get.put<UserController>(UserController());
   Get.put<AccountJobController>(AccountJobController());
   Get.put<AccountMechanicController>(AccountMechanicController());
+  Get.put<ChatController>(ChatController());
 
+  await appController.bootstrap();
   await userController.bootstrap();
 
   return true;
@@ -62,30 +72,52 @@ class MyAppBuilder extends StatelessWidget {
     return FutureBuilder<dynamic>(
         future: bootstrap(),
         builder: (context, snapshot) {
+          Widget content;
           if (snapshot.hasData) {
-            return MyApp();
+            content = MyApp();
           } else {
-            return CircularProgressIndicator();
+            content = Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(76, 61, 243, 1),
+                    Color.fromRGBO(120, 58, 183, 1),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              ),
+              child: Center(
+                child: Image(image: AssetImage('assets/images/logo.jpg'), width: 150)
+              )
+            );
           }
+          return AnimatedSwitcher(
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(child: child, opacity: animation);
+            },
+            duration: Duration(milliseconds: 2000),
+            child: content,
+          );
         });
   }
 }
 
 class MyApp extends StatelessWidget {
   final UserController userController = Get.find();
-  final AppController appController = Get.put(AppController());
+  final AppController appController = Get.find();
 
   String get initialRoute {
-    if (userController != null && userController.status.value == UserStatus.loggedin) {
-      return routes.home;
+    if (userController.status.value == UserStatus.loggedin) {
+      return routes.account;
     }
 
-    if (userController != null && userController.user.value.email != null) {
+    if (userController.user.value.email != null) {
       return routes.login;
     }
 
-    if (appController != null && appController.onboardingSkipped.value) {
-      return routes.home;
+    if (appController.onboardingSkipped.value) {
+      return routes.mechanics;
     }
 
     return routes.onboarding;
@@ -103,7 +135,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: routes.home,
+      initialRoute: initialRoute,
       getPages: [
         GetPage(
             name: routes.home,
@@ -144,6 +176,14 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: routes.account_job,
           page: () => AccountJobPage()
+        ),
+        GetPage(
+          name: routes.chat_rooms,
+          page: () => ChatRoomsPage()
+        ),
+        GetPage(
+          name: routes.chat_room,
+          page: () => ChatRoomPage()
         )
       ],
     );

@@ -62,7 +62,6 @@ class ReplyDataTransformer implements DataTransformerInterface
             $room->addUser($fromChatUser);
         }
 
-
         $message = new ChatMessage();
         $message->setUser($fromChatUser);
         $message->setMessage($data->message);

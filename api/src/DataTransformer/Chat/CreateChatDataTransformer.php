@@ -49,12 +49,16 @@ class CreateChatDataTransformer implements DataTransformerInterface
         $fromChatUser = new ChatUser();
         $fromChatUser->setUser($fromUser);
 
-        $toChatUser = null;
+        $toChatUser = $toUser = null;
         if ($data->to && $data->to->getId()) {
             $toUser = $data->to;
 
             $toChatUser = new ChatUser();
             $toChatUser->setUser($toUser);
+        }
+
+        if ($toUser === $fromUser) {
+            throw new \InvalidArgumentException('Error creating chat: identical from and to users');
         }
 
         // @todo reuse existing room with only those 2 users

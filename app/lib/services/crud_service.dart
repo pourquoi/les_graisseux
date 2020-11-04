@@ -75,21 +75,24 @@ class CrudService<T> extends GetxService {
 
   Future<T> get(dynamic id) {
     return api.get('/api/$resource/$id').then((data) {
-      print(data);
       return fromJson(data);
     });
   }
 
   Future<T> post(T res) {
     return api.post('/api/$resource', data:toJson(res)..removeWhere((key, value) => value == null)).then((data) {
-      print(data);
       return fromJson(data);
     });
   }
 
   Future<T> put(dynamic id, T res) {
     return api.put('/api/$resource/${id}', data:toJson(res)..removeWhere((key, value) => value == null)).then((data) {
-      print(data);
+      return fromJson(data);
+    });
+  }
+
+  Future<T> patch(dynamic id, Map<String, dynamic> data) {
+    return api.patch('/api/$resource/$id', data: data).then((data) {
       return fromJson(data);
     });
   }

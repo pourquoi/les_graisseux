@@ -119,6 +119,26 @@ class Job
      */
     protected $applications;
 
+    /**
+     * @var JobApplication|null
+     * @Groups({"job:read"})
+     * @ApiProperty()
+     */
+    public $application;
+
+    /**
+     * @var int|null
+     * @Groups("read")
+     * @ApiProperty()
+     */
+    public $distance;
+
+    /**
+     * @var bool|null
+     * @Groups("read")
+     */
+    public $mine;
+
     public function __construct()
     {
         $this->tasks = new ArrayCollection();

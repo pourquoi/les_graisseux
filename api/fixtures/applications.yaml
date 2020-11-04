@@ -1,0 +1,4 @@
+App\Entity\JobApplication:
+  application_bob_alice:
+    job: '@jobalice_1'
+    mechanic: '@mechanicbob'

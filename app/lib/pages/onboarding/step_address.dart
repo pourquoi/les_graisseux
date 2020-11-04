@@ -45,19 +45,17 @@ class _StepAddressState extends State<StepAddress> {
           controller: _controller,
           readOnly: true,
           onTap: () async {
-            // generate a new token here
-            final sessionToken = Uuid().v4();
+            widget.placeApi.initSession();
+
             final Suggestion result = await showSearch(
               context: context,
-              delegate: AddressSearch(sessionToken: sessionToken),
+              delegate: AddressSearch(),
             );
-            // This will change the text displayed in the TextField
+            
             if (result != null) {
-              final placeDetails = await widget.placeApi
-                  .getPlaceDetailFromId(result.placeId);
+              final placeDetails = await widget.placeApi.getPlaceDetailFromId(result.placeId);
               setState(() {
                 _controller.text = result.description;
-
                 stepController.setAddress(Address.fromPlace(placeDetails));
               });
             }

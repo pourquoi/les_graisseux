@@ -1,16 +1,13 @@
-import 'package:app/models/address.dart';
 import 'package:flutter/material.dart';
 import 'package:app/services/google/place_service.dart';
 import 'package:get/instance_manager.dart';
-import 'package:uuid/uuid.dart';
 
 class AddressSearch extends SearchDelegate<Suggestion> {
 
   String sessionToken;
-  PlaceApiProvider apiClient = Get.find();
+  PlaceApiProvider placeApi = Get.find();
 
-  AddressSearch({this.sessionToken}) {
-    if (sessionToken == null) sessionToken = Uuid().v4();
+  AddressSearch() {
   }
 
   @override
@@ -46,7 +43,7 @@ class AddressSearch extends SearchDelegate<Suggestion> {
   Widget buildSuggestions(BuildContext context) {
     return FutureBuilder(
       // We will put the api call here
-      future: query == "" ? null : apiClient.fetchSuggestions(query),
+      future: query == "" ? null : placeApi.fetchSuggestions(query),
       builder: (context, snapshot) => query == ''
           ? Container(
               padding: EdgeInsets.all(16.0),

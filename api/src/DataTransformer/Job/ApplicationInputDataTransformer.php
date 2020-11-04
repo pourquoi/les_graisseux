@@ -43,34 +43,37 @@ class ApplicationInputDataTransformer implements DataTransformerInterface
         $currentUser = $this->security->getUser();
 
         if ($this->security->isGranted('ROLE_ADMIN') && $data->mechanic) {
-            $mechanic = $this->mechanicRepository->find($data->mechanic);
+            $mechanic = $data->mechanic;
         } else {
             $mechanic = $currentUser->getMechanic();
         }
 
         if ($mechanic === null) {
-            throw new \InvalidArgumentException(sprintf('Error creating job application: mechanic %d not found', $data->mechanic));
+            throw new \InvalidArgumentException('Error creating job application: mechanic required');
         }
 
-        $job = $this->jobRepository->find($data->job);
-        if ($job === null) {
-            throw new \InvalidArgumentException(sprintf('Error creating job application: job %d not found', $data->job));
+        if ($data->job === null) {
+            throw new \InvalidArgumentException('Error creating job application: job required');
         }
 
-        $previous_applications = $this->applicationRepository->findBy(['job'=>$job, 'mechanic'=>$mechanic]);
+        if ($mechanic->getUser() === $data->job->getCustomer()->getUser()) {
+            throw new \InvalidArgumentException('Error creating job application: cannot self apply');
+        }
+
+        $previous_applications = $this->applicationRepository->findBy(['job'=>$data->job, 'mechanic'=>$mechanic]);
         if ( count($previous_applications) ) {
             // @todo
             throw new \InvalidArgumentException();
         }
 
-        $application->setJob($job);
+        $application->setJob($data->job);
         $application->setMechanic($mechanic);
 
         $chatRoom = new ChatRoom();
         $chatUserMechanic = new ChatUser();
         $chatUserMechanic->setUser($mechanic->getUser());
         $chatUserCustomer = new ChatUser();
-        $chatUserMechanic->setUser($job->getCustomer()->getUser());
+        $chatUserCustomer->setUser($data->job->getCustomer()->getUser());
         $chatRoom->addUser($chatUserMechanic);
         $chatRoom->addUser($chatUserCustomer);
 

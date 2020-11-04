@@ -56,7 +56,6 @@ services:
     App\Utils\TokenManager:
         public: true
 
-
     App\EventSubscriber\AuthenticationSuccessListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
@@ -64,3 +63,11 @@ services:
     App\Serializer\ComposedResourceNormalizer:
         decorates: 'api_platform.jsonld.normalizer.item'
         arguments: [ '@App\Serializer\ComposedResourceNormalizer.inner' ]
+
+    App\DataProvider\JobDataProvider:
+        bind:
+            $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+            $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
+
+    Liip\ImagineBundle\Service\FilterService:
+        alias: 'liip_imagine.service.filter'

@@ -20,7 +20,6 @@ class StepDescription extends StatefulWidget {
 
 class _StepDescriptionState extends State<StepDescription>
 {
-  TextEditingController _usernameController;
   TextEditingController _titleController;
   TextEditingController _descriptionController;
 
@@ -28,7 +27,6 @@ class _StepDescriptionState extends State<StepDescription>
 
   void initState() {
     super.initState();
-    _usernameController = TextEditingController(text: widget.userController.user.value.username ?? '');
 
     if (widget.controller.profileType.value == ProfileType.Customer) {
       _titleController = TextEditingController(text: widget.jobController.job.value.title ?? '');
@@ -39,14 +37,13 @@ class _StepDescriptionState extends State<StepDescription>
   }
 
   void dispose() {
-    _usernameController.dispose();
     if (_titleController != null)
       _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
-  void submit() async {
+  void submit() {
     if (_formKey.currentState.validate()) {
       if (widget.controller.profileType.value == ProfileType.Customer) {
         widget.jobController.job.value.title = _titleController.text;
@@ -54,7 +51,7 @@ class _StepDescriptionState extends State<StepDescription>
       } else {
         widget.mechanicController.mechanic.value.about = _descriptionController.text;
       }
-      await widget.controller.submit();
+      widget.controller.submit();
     }
   }
 
@@ -63,35 +60,21 @@ class _StepDescriptionState extends State<StepDescription>
       key: _formKey,
       child: Column(
         children: [
-          TextFormField(
-            controller: _usernameController,
-            decoration: InputDecoration(
-              icon: Icon(Icons.lock), 
-              labelText: 'Username', 
-              hintText: 'username'
-            ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'input.required';
-              }
-              return null;
-            },
-          ),
           Obx(() => widget.controller.profileType.value == ProfileType.Customer ?
-          TextFormField(
-            controller: _titleController,
-            decoration: InputDecoration(
-              icon: Icon(Icons.lock), 
-              labelText: 'Title', 
-              hintText: 'title'
-            ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'input.required';
-              }
-              return null;
-            },
-          ) : SizedBox.shrink()),
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                icon: Icon(Icons.lock), 
+                labelText: 'Title', 
+                hintText: 'title'
+              ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'input.required';
+                }
+                return null;
+              },
+            ) : SizedBox.shrink()),
           TextFormField(
             controller: _descriptionController,
             decoration: InputDecoration(

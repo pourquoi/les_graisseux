@@ -28,7 +28,7 @@ use App\Dto\User as UserDto;
  *     itemOperations={
  *          "get",
  *          "put" = { "security" = "is_granted('EDIT_USER', object)" },
- *          "patch" = { "security" = "is_granted('EDIT_USER', object)", "denormalizationContext"={"groups"={"write", "user:edit"}} },
+ *          "patch" = { "security" = "is_granted('EDIT_USER', object)", "denormalizationContext"={"groups"={"user:edit"}} },
  *          "delete" = { "security" = "is_granted('DELETE_USER', object)" }
  *     },
  * )
@@ -45,21 +45,28 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"read", "write"})
+     * @Groups("read")
      * @ApiProperty(writable=false)
      */
     protected $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"owner:user:read", "write"})
+     * @Groups({"_owner:user:read"})
      */
     protected $email;
 
     /**
+     * @var MediaObject
+     * @ORM\ManyToOne(targetEntity="MediaObject")
+     * @Groups({"read", "user:write", "user:edit"})
+     */
+    protected $avatar;
+
+    /**
      * @var boolean
      * @ORM\Column(type="boolean")
-     * @Groups({"read"})
+     * @Groups({"_owner:user:read"})
      */
     protected $email_verification_required = false;
 
@@ -258,7 +265,14 @@ class User implements UserInterface
         $this->is_admin = $is_admin;
     }
 
+    public function getAvatar(): ?MediaObject
+    {
+        return $this->avatar;
+    }
 
-
-
+    public function setAvatar(?MediaObject $avatar): self
+    {
+        $this->avatar = $avatar;
+        return $this;
+    }
 }

@@ -1,3 +1,4 @@
+import 'package:app/models/media.dart';
 import 'package:app/services/api.dart';
 import 'package:app/services/endpoints/user.dart';
 import 'package:get/state_manager.dart';
@@ -19,12 +20,15 @@ class UserController extends GetxController {
   void onInit() {
   }
 
-  Future<UserController> bootstrap() async {
+  Future bootstrap() async {
     api = Get.find<ApiService>();
     userService = Get.find<UserService>();
-
+    loadFromStorage();
     api.token = token;
+    await loadFromStorage();
+  }
 
+  Future loadFromStorage() async {
     GetStorage box = GetStorage();
     String storedToken = box.read("token");
     int storedUserId = box.read("user.id");
@@ -40,8 +44,14 @@ class UserController extends GetxController {
     } else {
       await logout();
     }
+  }
 
-    return this;
+  Future saveToStorage() async {
+    GetStorage box = GetStorage();
+    box.write("token", token.value);
+    box.write("user.id", user.value.id);
+    box.write("user.email", user.value.email);
+    box.write("user.username", user.value.username);
   }
 
   Future login({@required String email, @required String password}) async {
@@ -71,6 +81,7 @@ class UserController extends GetxController {
     return api.post('/api/users',
         data: {'email': email, 'password': password}).then((data) {
       user.value = User.fromJson(data);
+      saveToStorage();
       return login(email: email, password: password);
     }).catchError((error) {
       loading.value = false;
@@ -85,9 +96,37 @@ class UserController extends GetxController {
       user.value = User.fromJson(data);
       status.value = UserStatus.loggedin;
       loading.value = false;
+      saveToStorage();
     }).catchError((error) {
       token.nil();
       status.value = UserStatus.loggedout;
+      loading.value = false;
+      throw error;
+    });
+  }
+
+  Future editUsername(String username) async {
+    loading.value = true;
+    return userService.patch(user.value.id, {'username': username}).then((data) {
+      user.value.username = username;
+      user.refresh();
+      loading.value = false;
+      saveToStorage();
+      return user;
+    }).catchError((error) {
+      loading.value = false;
+      throw error;
+    });
+  }
+
+  Future editAvatar(Media media) async {
+    loading.value = true;
+    return userService.patch(user.value.id, {'avatar': media.hydraId}).then((data) {
+      user.value.avatar = media;
+      user.refresh();
+      loading.value = false;
+      return user;
+    }).catchError((error) {
       loading.value = false;
       throw error;
     });

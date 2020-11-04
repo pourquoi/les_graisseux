@@ -28,12 +28,30 @@ class ChatTest extends Base
         $this->assertJsonContains(['hydra:totalItems' => 1]);
     }
 
+    public function testFilter(): void
+    {
+        $client = static::createClient();
+        self::login($client, 'alice@example.com', 'pass1234');
+        $response = $client->request('GET', '/api/chat_rooms?page=1');
+        $this->assertResponseIsSuccessful();
+
+        $room = $response->toArray()['hydra:member'][0];
+        $response = $client->request('GET', '/api/chat_rooms/' . $room['uuid']);
+        $this->assertResponseIsSuccessful();
+
+        $response = $client->request('GET', '/api/chat_rooms/' . $room['uuid'] . '/messages');
+        $this->assertResponseIsSuccessful();
+
+        $response = $client->request('GET', '/api/chat_messages/feed');
+        $this->assertResponseIsSuccessful();
+    }
+
     public function testCreateChat(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
 
-        $bob = $container->get('doctrine')->getRepository(User::class)->findOneByEmail('unverified@example.com');
+        $bob = $container->get('doctrine')->getRepository(User::class)->findOneByEmail('bob@example.com');
 
         self::login($client, 'roger@example.com', 'pass1234');
         $response = $client->request('POST', '/api/chat_rooms', ['json'=>[
@@ -58,6 +76,12 @@ class ChatTest extends Base
         $response = $client->request('POST', '/api/chat_messages', ['json'=>[
             'room' => $room['@id'],
             'message' => 'Hey'
+        ]]);
+        $this->assertResponseIsSuccessful();
+
+        $response = $client->request('POST', '/api/chat_messages', ['json'=>[
+            'room' => $room['@id'],
+            'message' => 'Hey2'
         ]]);
         $this->assertResponseIsSuccessful();
     }

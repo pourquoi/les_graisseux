@@ -2,18 +2,20 @@
 
 namespace App\Dto\Job;
 
+use App\Entity\Job;
+use App\Entity\Mechanic;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 class ApplicationInput
 {
     /**
-     * @var int
+     * @var Mechanic
      * @Groups({"write"})
      */
     public $mechanic;
 
     /**
-     * @var int
+     * @var Job
      * @Groups({"write"})
      */
     public $job;

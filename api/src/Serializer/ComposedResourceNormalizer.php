@@ -7,9 +7,10 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-// @todo refactor
 class ComposedResourceNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
+    const META_FIELDS = ['distance'];
+
     private $decorated;
 
     public function __construct(NormalizerInterface $decorated)
@@ -23,21 +24,20 @@ class ComposedResourceNormalizer implements NormalizerInterface, DenormalizerInt
 
     public function supportsNormalization($data, string $format = null)
     {
-        if( is_array($data) && isset($data['distance']) && isset($data[0]) ) {
+        if ($this->isResourceComposed($data) )
             return $this->decorated->supportsNormalization($data[0], $format);
-        }
 
         return $this->decorated->supportsNormalization($data, $format);
     }
 
     public function normalize($object, string $format = null, array $context = [])
     {
-        if( is_array($object) && isset($object['distance']) && isset($object[0]) ) {
+        if ($this->isResourceComposed($object) ) {
             $data = $this->decorated->normalize($object[0], $format, $context);
 
             foreach($object as $key=>$prop) {
-                if( $key !== 0 && (is_scalar($prop) || is_string($prop))) {
-                    $data['@' . $key] = $prop;
+                if( $key !== 0 && in_array($key, self::META_FIELDS) ) {
+                    $data[$key] = $prop;
                 }
             }
         } else {
@@ -62,6 +62,17 @@ class ComposedResourceNormalizer implements NormalizerInterface, DenormalizerInt
         if($this->decorated instanceof SerializerAwareInterface) {
             $this->decorated->setSerializer($serializer);
         }
+    }
+
+    private function isResourceComposed($data) {
+        if( is_array($data) && isset($data[0]) ) {
+            foreach(self::META_FIELDS as $field) {
+                if (isset($data[$field]))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
 }

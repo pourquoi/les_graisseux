@@ -49,12 +49,16 @@ class PlaceApiProvider extends GetxService {
   String sessionToken;
 
   void onInit() {
-    sessionToken = Uuid().v4();
+    initSession();
   }
 
   static final String androidKey = GOOGLE_PLACE_API_KEY;
   static final String iosKey = GOOGLE_PLACE_API_KEY;
   final apiKey = Platform.isAndroid ? androidKey : iosKey;
+
+  void initSession() {
+    sessionToken = Uuid().v4();
+  }
 
   Future<List<Suggestion>> fetchSuggestions(String input, {String lang = 'fr'}) async {
     final request =

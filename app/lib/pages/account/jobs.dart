@@ -21,7 +21,7 @@ class _AccountJobsPageState extends State<AccountJobsPage> {
 
   void initState() {
     super.initState();
-    widget.controller.params.value.user = widget.userController.user.value.hydraId;
+    widget.controller.params.value.user = widget.userController.user.value.id;
     widget.controller.load();
   }
 
@@ -48,8 +48,6 @@ class _AccountJobsPageState extends State<AccountJobsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text('background 1'),
-                      Text('background 2')
                     ]
                   )
                 ),
@@ -59,7 +57,7 @@ class _AccountJobsPageState extends State<AccountJobsPage> {
                   StretchMode.blurBackground,
                   StretchMode.fadeTitle,
                 ],
-                title: Text('flexible')
+                title: Text('My jobs')
               ),
             ),
             Obx( () =>

@@ -16,6 +16,12 @@ class ApiService extends GetxService {
     });
     _dio = Dio(options);
     _dio.transformer = ApiTransformer();
+    
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (RequestOptions options) async {
+        options.headers.remove('content-type');
+      }
+    ));
   }
 
   Future<T> get<T>(path, {Map<String, dynamic> queryParameters}) {
@@ -30,29 +36,35 @@ class ApiService extends GetxService {
       });
   }
 
-  Future<T> post<T>(path,
-          {dynamic data, Map<String, dynamic> queryParameters}) =>
+  Future<T> post<T>(path, {dynamic data, Map<String, dynamic> queryParameters}) =>
       _post('POST', path, data: data, queryParameters: queryParameters);
 
-  Future<T> put<T>(path,
-          {dynamic data, Map<String, dynamic> queryParameters}) =>
+  Future<T> put<T>(path, {dynamic data, Map<String, dynamic> queryParameters}) =>
       _post('PUT', path, data: data, queryParameters: queryParameters);
 
-  Future<T> patch<T>(path,
-          {dynamic data, Map<String, dynamic> queryParameters}) =>
-      _post('PATCH', path, data: data, queryParameters: queryParameters);
+  Future<T> patch<T>(path, {dynamic data, Map<String, dynamic> queryParameters}) =>
+      _post('PATCH', path, data: data, queryParameters: queryParameters, headers: {"Content-Type": "application/merge-patch+json",});
 
-  Future<T> _post<T>(String method, path,
-      {dynamic data, Map<String, dynamic> queryParameters}) {
-        print('$method $path');
-        print(data);
+  Future<T> _post<T>(String method, path, {dynamic data, Map<String, dynamic> queryParameters, Map<String, dynamic> headers}) {
+    print('$method $path');
+    print(data);
+
+    if (data is FormData) {
+      return _dio.request(path, data: data, options: Options(method: method, headers: {"Content-Type": "multipart/form-data"})).then((response) {
+        return response.data;
+      }).catchError((error) {
+        throw error;
+      });
+    }
+
     String payload = json.encode(data);
     return _dio
         .request<dynamic>(path,
             data: payload,
             queryParameters: queryParameters,
-            options: Options(method: method))
+            options: Options(method: method, headers: headers))
         .then((response) {
+      print(response.data);
       return response.data;
     }).catchError((error) {
       throw error;

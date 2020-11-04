@@ -19,11 +19,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *         }
  *     },
  *     collectionOperations={
- *         "get",
+ *         "get"={
+ *              "method"="GET",
+ *              "normalization_context"={"groups"={"read", "application:read", "application:list"}},
+ *          },
  *         "post"={
  *             "method"="POST",
+ *             "security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_MECHANIC')",
  *             "security_post_denormalize"="is_granted('CREATE_APPLICATION', object)",
- *             "input"=ApplicationInput::class
+ *             "input"=ApplicationInput::class,
+ *             "normalization_context"={"groups"={"read", "application:read", "application:job:read", "mechanic:read"}},
  *         }
  *     }
  * )
@@ -57,6 +62,7 @@ class JobApplication
      * @var Job
      * @ORM\ManyToOne(targetEntity="Job", inversedBy="applications")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"application:job:read", "application:list"})
      */
     protected $job;
 
@@ -64,12 +70,14 @@ class JobApplication
      * @var Mechanic
      * @ORM\ManyToOne(targetEntity="Mechanic")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"application:job:read", "application:list"})
      */
     protected $mechanic;
 
     /**
      * @var ChatRoom
      * @ORM\OneToOne(targetEntity="ChatRoom", inversedBy="application", cascade={"persist", "remove"})
+     * @Groups({"application:job:read", "application:list"})
      */
     protected $chat;
 

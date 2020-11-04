@@ -15,6 +15,7 @@ import 'package:app/controllers/account/mechanic.dart';
 enum OnboardingStep { 
   Profile, 
   Account, 
+  Username,
   JobServices, 
   JobVehicle, 
   MechanicServices, 
@@ -62,11 +63,7 @@ class OnboardingAccount with OnboardingStepController {
   }
 
   OnboardingStep next() {
-    if (_controller.profileType.value == ProfileType.Customer) {
-      return OnboardingStep.JobServices;
-    } else {
-      return OnboardingStep.MechanicServices;
-    }
+    return OnboardingStep.Username;
   }
 
   OnboardingStep prev() {
@@ -87,6 +84,28 @@ class OnboardingAccount with OnboardingStepController {
   }
 }
 
+class OnboardingUsername with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingUsername(this._controller);
+
+  bool get disabled {
+    return _controller.userController.user.value.username != null && _controller.userController.user.value.username != '';
+  }
+
+  OnboardingStep next() {
+    if (_controller.profileType.value == ProfileType.Customer) {
+      return OnboardingStep.JobServices;
+    } else {
+      return OnboardingStep.MechanicServices;
+    }
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.Account;
+  }
+}
+
 class OnboardingJobServices with OnboardingStepController {
   OnboardingController _controller;
 
@@ -103,7 +122,7 @@ class OnboardingJobServices with OnboardingStepController {
     if (_controller.userController.status.value == UserStatus.loggedin) {
       return null;
     } else {
-      return OnboardingStep.Account;
+      return OnboardingStep.Username;
     }
   }
 
@@ -158,7 +177,7 @@ class OnboardingMechanicServices with OnboardingStepController {
   }
 
   OnboardingStep prev() {
-    return OnboardingStep.Account;
+    return OnboardingStep.Username;
   }
 }
 
@@ -248,6 +267,7 @@ class OnboardingController extends GetxController {
     steps = {
       OnboardingStep.Profile: OnboardingProfile(this, initialProfile: profileType.value),
       OnboardingStep.Account: OnboardingAccount(this),
+      OnboardingStep.Username: OnboardingUsername(this),
       OnboardingStep.JobServices: OnboardingJobServices(this),
       OnboardingStep.JobVehicle: OnboardingJobVehicle(this),
       OnboardingStep.MechanicServices: OnboardingMechanicServices(this),

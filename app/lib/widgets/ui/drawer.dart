@@ -1,12 +1,10 @@
-
+import 'package:app/widgets/ui/profile_picture.dart';
+import 'package:flutter/material.dart';
 import 'package:app/controllers/app.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/user.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:app/routes.dart' as routes;
-import 'package:app/services/endpoints/user.dart';
 
 class AppDrawer extends StatelessWidget
 {
@@ -21,16 +19,18 @@ class AppDrawer extends StatelessWidget
           Obx(() {
             if (userController.status.value == UserStatus.loggedin) {
               return UserAccountsDrawerHeader(
+                margin: EdgeInsets.only(bottom: 40.0),  
                 onDetailsPressed: () => Get.offAndToNamed(routes.account),
                 accountEmail: Text(userController.user.value.email ?? ''),
                 accountName: Text(userController.user.value.username ?? ''),
+                currentAccountPicture: ProfilePictureWidget(),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                 ),
               );
             } else {
               return DrawerHeader(
-                child: Text('Drawer Header'),
+                child: Text('app.title'.tr),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                 ),
@@ -82,6 +82,22 @@ class AppDrawer extends StatelessWidget
                   ]
                 ),
                 onTap: () { Get.offAndToNamed(routes.account_jobs); },
+              );
+            } else {
+              return SizedBox.shrink();
+            }
+          }),
+
+          Obx(() {
+            if (userController.status.value == UserStatus.loggedin) {
+              return ListTile(
+                title: Row(
+                  children: [
+                    Icon(Icons.list),
+                    Padding(padding: EdgeInsets.only(left: 8.0), child: Text('Messages'))
+                  ]
+                ),
+                onTap: () { Get.offAndToNamed(routes.chat_rooms); },
               );
             } else {
               return SizedBox.shrink();

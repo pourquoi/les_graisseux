@@ -8,3 +8,5 @@ final mechanic = '/mechanics/:mechanic';
 final account = '/account';
 final account_jobs = '/account/jobs';
 final account_job = '/account/jobs/:job';
+final chat_rooms = '/chats';
+final chat_room = '/chats/:chat';

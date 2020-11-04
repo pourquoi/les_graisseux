@@ -9,7 +9,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *     normalizationContext={"groups"={"read", "chat_user:read"}},
+ *     denormalizationContext={"groups"={"write", "chat_user:write"}},
+ *     collectionOperations={
+ *     },
+ *     itemOperations={
+ *       "get"={
+ *         "controller"=NotFoundAction::class,
+ *         "read"=false,
+ *         "output"=false,
+ *        },
+ *     }
+ * )
  * @ORM\Entity(repositoryClass=ChatUserRepository::class)
  */
 class ChatUser
@@ -21,6 +33,7 @@ class ChatUser
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      * @ApiProperty(writable=false)
+     * @Groups("read")
      */
     private $id;
 
@@ -28,6 +41,7 @@ class ChatUser
      * @var User
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("read")
      */
     protected $user;
 

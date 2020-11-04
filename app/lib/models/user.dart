@@ -2,6 +2,7 @@ import 'package:app/models/address.dart';
 import 'package:app/models/common.dart';
 import 'package:app/models/customer.dart';
 import 'package:app/models/mechanic.dart';
+import 'package:app/models/media.dart';
 
 enum ProfileType { Undefined, Mechanic, Customer, Both }
 
@@ -15,6 +16,8 @@ class User extends HydraResource {
   Mechanic mechanic;
 
   Address address;
+
+  Media avatar;
 
   User({this.id, this.email, this.username});
 
@@ -44,6 +47,10 @@ class User extends HydraResource {
     email = json['email'];
     username = json['username'];
 
+    if (json.containsKey('avatar') && json['avatar'] != null) {
+      avatar = Media.fromJson(json['avatar'], context: context);
+    }
+
     if (json.containsKey('customer') && json['customer'] != null) {
       customer = Customer.fromJson(json['customer'], context: context);
     }
@@ -63,6 +70,8 @@ class User extends HydraResource {
       'email': email, 
       'username': username
     };
+
+    if (avatar != null) data['avatar'] = avatar.hydraId;
 
     return data..addAll(super.toJson(context: context));
   }

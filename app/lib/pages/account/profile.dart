@@ -1,4 +1,5 @@
 import 'package:app/models/mechanic.dart';
+import 'package:app/widgets/ui/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,6 +25,8 @@ class _ProfilePageState extends State<ProfilePage>
 {
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Account')),
+      drawer: AppDrawer(),
       body: SafeArea(child: Obx(() {
         if (widget.appController.profileType.value == ProfileType.Customer) {
           return CustomerProfilePage();
