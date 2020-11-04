@@ -1,6 +1,6 @@
 flysystem:
   storages:
-    default.storage:
+    upload.storage:
       adapter: 'local'
       options:
-        directory: '%kernel.project_dir%/public/media/test'
+        directory: '%kernel.project_dir%/public/test/upload'

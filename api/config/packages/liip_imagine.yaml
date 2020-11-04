@@ -5,8 +5,16 @@ liip_imagine:
     loaders:
         system_loader:
             flysystem:
-                filesystem_service: default.storage
+                filesystem_service: upload.storage
     data_loader: system_loader
+
+    resolvers:
+        default:
+            flysystem:
+                filesystem_service: upload.storage
+                root_url:           '%env(SCHEME)%://%env(HOST)%/upload'
+                cache_prefix:       cache
+                visibility:         public
 
     filter_sets:
         cache: ~

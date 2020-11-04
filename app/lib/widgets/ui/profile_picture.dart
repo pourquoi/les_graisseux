@@ -18,6 +18,9 @@ class ProfilePictureWidget extends StatefulWidget
 
 class _ProfilePictureState extends State<ProfilePictureWidget>
 {
+  bool uploading = false;
+  File image;
+
   void initState() {
     super.initState();
   }
@@ -29,8 +32,18 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
     if (pickedFile != null) {
       File _image = File(pickedFile.path);
 
+      setState(() { 
+        uploading = true;
+        image = _image;
+      });
+
       Media avatar = await widget.mediaService.uploadFile(_image);
       await widget.userController.editAvatar(avatar);
+
+      setState(() {
+        uploading = false;
+        image = null;
+      });
     }
   }
 
@@ -49,27 +62,53 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
                   shape: BoxShape.circle,
                   color: Colors.green
                 ),
-                child: Obx(() {
-                  if (widget.userController.user.value.avatar != null) {
-                    return CircleAvatar(
-                      backgroundImage: NetworkImage(widget.userController.user.value.avatar.url)
-                    );
-                  } else {
-                    return Icon(Icons.person, size: 52);
-                  }
-                })
-              ),
-              Positioned(
-                bottom: -15,
-                right: -15,
-                child: Container(
-                  color: Colors.transparent,
-                  child: IconButton(
-                    iconSize: 20,
-                    icon: Icon(Icons.edit, color: Colors.white), 
-                    onPressed: () => edit()
+                child: (image == null ?
+                  Obx(() {
+                    if (widget.userController.user.value.avatar != null) {
+                      return CircleAvatar(
+                        backgroundImage: NetworkImage(widget.userController.user.value.avatar.thumb_url),
+                        onBackgroundImageError: (error, __) {
+                          print(error);
+                        },
+                      );
+                    } else {
+                      return Icon(Icons.person, size: 52);
+                    }
+                  }) : 
+                  CircleAvatar(
+                    backgroundImage: FileImage(image),
+                    onBackgroundImageError: (error, __) {
+                      print(error);
+                    },
                   )
                 )
+              ),
+              (
+                uploading ? 
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(backgroundColor: Colors.white,),
+                    ))
+                  )
+                :
+                   Positioned(
+                    bottom: -15,
+                    right: -15,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        iconSize: 20,
+                        icon: Icon(Icons.edit, color: Colors.white), 
+                        onPressed: () => edit()
+                      )
+                    )
+                  )
               )
             ],
           );

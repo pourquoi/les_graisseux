@@ -8,12 +8,13 @@ use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 
 class MediaObjectTest extends Base
 {
-    const UPLOAD_DIR = __DIR__ . '/../../public/media/test';
+    const UPLOAD_DIR = __DIR__ . '/../../public/test/upload';
 
     public function tearDown(): void
     {
-        assert(substr( self::UPLOAD_DIR, -strlen( 'public/media/test' ) ) == 'public/media/test');
+        assert(substr( self::UPLOAD_DIR, -strlen( 'public/test/upload' ) ) == 'public/test/upload');
         array_map('unlink', glob(self::UPLOAD_DIR . "/*.*"));
+        array_map('unlink', glob(self::UPLOAD_DIR . "/cache/thumb/*.*"));
         parent::tearDown();
     }
 
@@ -36,6 +37,7 @@ class MediaObjectTest extends Base
         $this->assertEquals(201, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
+        print_r($data);
         $filename = explode('/', $data['thumb_url']);
         $filename = end($filename);
 

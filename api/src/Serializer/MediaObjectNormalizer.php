@@ -5,6 +5,7 @@ namespace App\Serializer;
 use App\Entity\MediaObject;
 use App\Entity\User;
 use Liip\ImagineBundle\Service\FilterService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -44,8 +45,17 @@ class MediaObjectNormalizer implements ContextAwareNormalizerInterface, Normaliz
     {
         $context[self::ALREADY_CALLED] = true;
 
-        $object->contentUrl = $this->storage->resolveUri($object, 'file');
-        $object->thumbUrl = $this->filterService->getUrlOfFilteredImage($object->getFilePath(), 'thumb');
+        try {
+            $object->contentUrl = $this->storage->resolveUri($object, 'file');
+        } catch( \Exception $e ) {
+            return null;
+        }
+
+        try {
+            $object->thumbUrl = $this->filterService->getUrlOfFilteredImage($object->getFilePath(), 'thumb');
+        } catch( \Exception $e ) {
+            return null;
+        }
 
         $data = $this->normalizer->normalize($object, $format, $context);
 
