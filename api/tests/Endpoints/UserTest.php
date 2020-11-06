@@ -6,13 +6,16 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Utils\TokenManager;
 use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
+use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpClient\Exception\ClientException;
 use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
+use Symfony\Component\Mailer\Event\MessageEvent;
 
 class UserTest extends Base
 {
-    use RefreshDatabaseTrait;
+    use ReloadDatabaseTrait;
 
     public function testGetCollection(): void
     {
@@ -25,10 +28,9 @@ class UserTest extends Base
         $user = json_decode($response->getContent(), true)['hydra:member'][0];
 
         $this->assertArrayNotHasKey('email', $user);
-
     }
 
-    public function testSecretAttribute(): void
+    public function testUserContext(): void
     {
         $client = static::createClient();
         $response = $client->request('GET', '/api/users?username=bob');
@@ -95,26 +97,39 @@ class UserTest extends Base
         $this->assertEquals(400, $response->getStatusCode());
     }
 
-    public function testRegister(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
         $client->enableProfiler();
+        $container = self::$kernel->getContainer();
 
         $response = $client->request('POST', '/api/users', ['json' => [
             'email' => 'luke@example.com',
             'password' => 'pass1234'
         ]]);
 
+        $user = $response->toArray();
+
         $this->assertResponseIsSuccessful();
 
         if ($profile = $client->getProfile()) {
             /** @var MessageDataCollector $collector */
             $collector = $profile->getCollector('mailer');
-            $this->assertCount(1, $collector->getEvents()->getMessages());
+            $sent = 0;
+            /** @var MessageEvent $event */
+            foreach( $collector->getEvents()->getEvents() as $event) {
+                if (!$event->isQueued()) $sent++;
+            }
+            $this->assertEquals(1, $sent);
         }
+
+        $token = $container->get(TokenManager::class)->encode(['user_id' => $user['id']]);
+
+        $response = $client->request('GET', '/_email_verification/' . $token, ['headers'=>['Accept' => 'text/html']]);
+        $this->assertResponseIsSuccessful();
     }
 
-    public function testPatch(): void
+    public function testEdit(): void
     {
         $client = static::createClient();
         $data = static::login($client, 'alice@example.com', 'pass1234');

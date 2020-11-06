@@ -1,0 +1,33 @@
+
+<mjml>
+  <mj-body background-color="#ffffff" font-size="13px">
+    <mj-section background-color="#ffffff" padding-bottom="0px" padding-top="0">
+      <mj-column vertical-align="top" width="100%">
+        <mj-image src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b40b7298-4884-457d-9a2e-5180bcc692d9/d62e9qe-654bd3c9-f960-4078-b00e-761617191fd0.jpg/v1/fill/w_600,h_399,q_75,strp/open_for_business___hdr_by_aeroartist_d62e9qe-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOiIsImlzcyI6InVybjphcHA6Iiwib2JqIjpbW3siaGVpZ2h0IjoiPD0zOTkiLCJwYXRoIjoiXC9mXC9iNDBiNzI5OC00ODg0LTQ1N2QtOWEyZS01MTgwYmNjNjkyZDlcL2Q2MmU5cWUtNjU0YmQzYzktZjk2MC00MDc4LWIwMGUtNzYxNjE3MTkxZmQwLmpwZyIsIndpZHRoIjoiPD02MDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.O2fmzUScV01wLLPuLvSfnKOI7XCeGDiFhYysv8GzUAI" alt="" align="center" border="none" width="600px" height="250px" padding-left="0px" padding-right="0px" padding-bottom="0px" padding-top="0"></mj-image>
+        <!--
+        <mj-image src="{{ absolute_url(asset('build/images/garage-1.jpg')) }}" alt="" align="center" border="none" width="600px" padding-left="0px" padding-right="0px" padding-bottom="0px" padding-top="0"></mj-image>
+        -->
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#009FE3" vertical-align="top" padding-bottom="0px" padding-top="0">
+      <mj-column vertical-align="top" width="100%">
+        <mj-text align="left" color="#ffffff" font-size="35px" font-weight="bold" font-family="open Sans Helvetica, Arial, sans-serif" padding-left="25px" padding-right="25px" padding-bottom="20px" padding-top="50px">
+        {% trans with {'%app%': 'app.name'|trans} %}email.email_verification.title{% endtrans %}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#009fe3" padding-bottom="20px" padding-top="10px">
+      <mj-column vertical-align="middle" width="100%">
+        <mj-text align="left" color="#ffffff" font-size="15px" font-family="open Sans Helvetica, Arial, sans-serif" padding-left="25px" padding-right="25px">
+        {% trans %}email.email_verification.body{% endtrans %}
+        </mj-text>
+        <mj-button href="{{ verification_url }}" align="left" font-size="22px" font-weight="bold" background-color="#ffffff" border-radius="10px" color="#1AA0E1" font-family="open Sans Helvetica, Arial, sans-serif">
+        {% trans %}email.email_verification.cta{% endtrans %}
+        </mj-button>
+        <mj-text align="left" color="#ccc" font-size="12px" font-family="open Sans Helvetica, Arial, sans-serif" padding-left="25px" padding-right="25px">
+        {% trans %}email.email_verification.footnote{% endtrans %}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

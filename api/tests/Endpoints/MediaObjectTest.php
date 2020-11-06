@@ -37,7 +37,6 @@ class MediaObjectTest extends Base
         $this->assertEquals(201, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
-        print_r($data);
         $filename = explode('/', $data['thumb_url']);
         $filename = end($filename);
 

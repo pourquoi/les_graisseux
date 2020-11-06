@@ -1,3 +1,4 @@
+.idea
 
 ###> symfony/framework-bundle ###
 /.env.local
@@ -19,10 +20,16 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
-.idea
 ###> liip/imagine-bundle ###
 /public/media/cache/
 ###< liip/imagine-bundle ###
 
 /public/test/
 /public/upload/
+
+###> symfony/webpack-encore-bundle ###
+/node_modules/
+/public/build/
+npm-debug.log
+yarn-error.log
+###< symfony/webpack-encore-bundle ###

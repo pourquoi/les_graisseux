@@ -21,7 +21,7 @@ class VehicleTreeTest extends Base
         $this->assertTrue($response->toArray()['hydra:totalItems'] > 0);
     }
 
-    public function testPostVehicle(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
 
@@ -60,10 +60,9 @@ class VehicleTreeTest extends Base
             'energy' => "/api/energies/{$energy->getId()}"
         ]]);
         $this->assertResponseIsSuccessful();
-        $type = $response->toArray();
     }
 
-    public function testPostFullVehicle(): void
+    public function testCreateFull(): void
     {
         $client = static::createClient();
 
@@ -88,9 +87,7 @@ class VehicleTreeTest extends Base
             ],
             'name' => '1.9 JTS 160cv',
             'energy' => "/api/energies/{$energy->getId()}"
-
         ]]);
         $this->assertResponseIsSuccessful();
-        $type = $response->toArray();
     }
 }

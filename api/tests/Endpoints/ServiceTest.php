@@ -19,7 +19,7 @@ class ServiceTest extends Base
         $this->assertJsonContains(['hydra:totalItems' => 7]);
     }
 
-    public function testPostService(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
 

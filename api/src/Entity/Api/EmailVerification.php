@@ -8,6 +8,7 @@ use App\Controller\EmailVerificationController;
 
 /**
  * @ApiResource(
+ *     formats={"html", "json", "jsonld"},
  *     collectionOperations={},
  *     itemOperations={
  *         "get"={
@@ -15,8 +16,7 @@ use App\Controller\EmailVerificationController;
  *             "requirements"={"id"=".+"},
  *             "controller"=EmailVerificationController::class
  *         }
- *     },
- *     output=false
+ *     }
  * )
  */
 class EmailVerification

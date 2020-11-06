@@ -5,9 +5,9 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 
 parameters:
-    router.request_context.host: '%env(HOST)'
-    router.request_context.scheme: '%env(SCHEME)'
-    router.request_context.base_url: '%env(BASE_URL)'
+    router.request_context.host: '%env(HOST)%'
+    router.request_context.scheme: '%env(SCHEME)%'
+    router.request_context.base_url: '%env(BASE_URL)%'
     asset.request_context.base_path: '%router.request_context.base_url%'
     asset.request_context.secure: true
     kernel.default_locale: fr

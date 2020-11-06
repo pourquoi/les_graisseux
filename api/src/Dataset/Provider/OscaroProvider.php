@@ -4,7 +4,6 @@ namespace App\Dataset\Provider;
 
 use App\Dataset\ProviderInterface;
 use App\Entity\Energy;
-use App\Entity\Translation\EnergyTranslation;
 use App\Entity\VehicleTree;
 use App\Repository\EnergyRepository;
 use App\Repository\VehicleTreeRepository;

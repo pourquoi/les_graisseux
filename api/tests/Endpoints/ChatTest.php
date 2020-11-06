@@ -26,27 +26,25 @@ class ChatTest extends Base
         $response = $client->request('GET', '/api/chat_rooms?page=1');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains(['hydra:totalItems' => 1]);
+
+        $response = $client->request('GET', '/api/chat_messages/feed');
+        $this->assertResponseIsSuccessful();
     }
 
-    public function testFilter(): void
+    public function testGet(): void
     {
         $client = static::createClient();
         self::login($client, 'alice@example.com', 'pass1234');
         $response = $client->request('GET', '/api/chat_rooms?page=1');
-        $this->assertResponseIsSuccessful();
-
         $room = $response->toArray()['hydra:member'][0];
         $response = $client->request('GET', '/api/chat_rooms/' . $room['uuid']);
         $this->assertResponseIsSuccessful();
 
         $response = $client->request('GET', '/api/chat_rooms/' . $room['uuid'] . '/messages');
         $this->assertResponseIsSuccessful();
-
-        $response = $client->request('GET', '/api/chat_messages/feed');
-        $this->assertResponseIsSuccessful();
     }
 
-    public function testCreateChat(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();

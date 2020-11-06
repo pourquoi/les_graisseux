@@ -4,28 +4,31 @@ namespace App\Controller;
 
 use App\Entity\Api\EmailVerification;
 use App\Entity\User;
+use App\Utils\TokenManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Twig\Environment;
 
 class EmailVerificationController
 {
-    private $JWTEncoder;
+    private $tokenManager;
     private $em;
+    private $twig;
 
-    public function __construct(JWTEncoderInterface $JWTEncoder, EntityManagerInterface $em)
+    public function __construct(TokenManager $tokenManager, EntityManagerInterface $em, Environment $twig)
     {
-        $this->JWTEncoder = $JWTEncoder;
+        $this->tokenManager = $tokenManager;
         $this->em = $em;
+        $this->twig = $twig;
     }
 
-    public function __invoke(EmailVerification $data)
+    public function __invoke(EmailVerification $data, Request $request)
     {
         try {
-            $data = $this->JWTEncoder->decode($data->token);
+            $data = $this->tokenManager->decode($data->token);
         } catch( \Exception $e ) {
-            return new Response("", 400);
+            return new Response("invalid token", 400);
         }
 
         /** @var User $user */
@@ -33,9 +36,13 @@ class EmailVerificationController
             $user->setEmailVerificationRequired(false);
             $this->em->flush();
 
-            return $user;
+            if (in_array('text/html', $request->getAcceptableContentTypes())) {
+                return new Response($this->twig->render('transactions/email_verification.html.twig'));
+            }
+
+            return new Response("", 200);
         } else {
-            return new Response("", 400);
+            return new Response("invalid token user", 400);
         }
     }
 }

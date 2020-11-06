@@ -28,7 +28,7 @@ class JobTest extends Base
         $this->assertGreaterThan(0, $data['hydra:totalItems']);
     }
 
-    public function testGetWithApplication(): void
+    public function testUserContext(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -53,7 +53,7 @@ class JobTest extends Base
         $this->assertGreaterThan(0, $applicationCount);
     }
 
-    public function testPost(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -120,7 +120,7 @@ class JobTest extends Base
         $this->assertResponseIsSuccessful();
     }
 
-    public function testApply(): void
+    public function testApplyToJob(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();

@@ -393,6 +393,9 @@
     "sebastian/version": {
         "version": "2.0.1"
     },
+    "symfony/amqp-messenger": {
+        "version": "v5.1.8"
+    },
     "symfony/asset": {
         "version": "v5.1.5"
     },
@@ -431,6 +434,9 @@
     },
     "symfony/doctrine-bridge": {
         "version": "v5.1.5"
+    },
+    "symfony/doctrine-messenger": {
+        "version": "v5.1.8"
     },
     "symfony/dom-crawler": {
         "version": "v5.1.5"
@@ -535,6 +541,18 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/messenger": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.3",
+            "ref": "8a2675c061737658bed85102e9241c752620e575"
+        },
+        "files": [
+            "config/packages/messenger.yaml"
+        ]
+    },
     "symfony/mime": {
         "version": "v5.1.5"
     },
@@ -576,6 +594,9 @@
     },
     "symfony/property-info": {
         "version": "v5.1.5"
+    },
+    "symfony/redis-messenger": {
+        "version": "v5.1.8"
     },
     "symfony/routing": {
         "version": "5.1",
@@ -700,6 +721,25 @@
             "config/packages/dev/web_profiler.yaml",
             "config/packages/test/web_profiler.yaml",
             "config/routes/dev/web_profiler.yaml"
+        ]
+    },
+    "symfony/webpack-encore-bundle": {
+        "version": "1.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.6",
+            "ref": "69e1d805ad95964088bd510c05995e87dc391564"
+        },
+        "files": [
+            "assets/app.js",
+            "assets/styles/app.css",
+            "config/packages/assets.yaml",
+            "config/packages/prod/webpack_encore.yaml",
+            "config/packages/test/webpack_encore.yaml",
+            "config/packages/webpack_encore.yaml",
+            "package.json",
+            "webpack.config.js"
         ]
     },
     "symfony/yaml": {

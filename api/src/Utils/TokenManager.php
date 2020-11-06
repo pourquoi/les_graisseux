@@ -13,12 +13,12 @@ class TokenManager
         $this->encoder = $encoder;
     }
 
-    public function create($payload)
+    public function encode($payload)
     {
         return $this->encoder->encode($payload);
     }
 
-    public function check($value)
+    public function decode($value)
     {
         return $this->encoder->decode($value);
     }

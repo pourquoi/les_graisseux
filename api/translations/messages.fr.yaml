@@ -1,0 +1,10 @@
+app:
+  name: Les Graisseux
+
+email:
+  email_verification:
+    subject: Confirmez votre adresse email
+    title: Bienvenue chez %app%
+    body: Cliquez sur le lien ci-dessous pour confirmez votre adresse email et pouvoir entrer en contact avec les membres.
+    cta: Confirmer mon email
+    footnote: Ce lien valide pendant 48h. Si vous n'êtes pas à l'origine de cet email veuillez l'ignorer.
