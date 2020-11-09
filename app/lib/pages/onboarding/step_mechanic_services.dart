@@ -1,19 +1,12 @@
 
 import 'package:app/pages/account/profile.dart';
+import 'package:app/pages/onboarding/common.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:app/widgets/ui/stars.dart';
-
 import 'package:app/models/mechanic.dart';
-import 'package:app/models/vehicle_tree.dart';
-import 'package:app/models/service_tree.dart';
-
 import 'package:app/controllers/onboarding.dart';
 import 'package:app/controllers/account/mechanic.dart';
-
-import 'package:app/pages/service_picker.dart';
-import 'package:app/pages/vehicle_picker.dart';
 
 class StepMechanicServices extends StatefulWidget {
   final OnboardingController controller = Get.find();
@@ -25,46 +18,96 @@ class StepMechanicServices extends StatefulWidget {
 }
 
 class _StepMechanicServicesState extends State<StepMechanicServices> {
-
-  final _formKey = GlobalKey<FormState>();
+  List<GlobalKey<ItemFaderState>> keys;
 
   OnboardingMechanicServices get stepController => widget.controller.steps[OnboardingStep.MechanicServices];
 
   void initState() {
     super.initState();
+    keys = List.generate(2, (_) => GlobalKey<ItemFaderState>());
   }
 
   void submit() async {
-    //if (_formKey.currentState.validate()) {
-      await widget.controller.next();
-    //}
+    for (GlobalKey<ItemFaderState> key in keys) {
+      if (key.currentState != null) {
+        await key.currentState.hide();
+      }
+    }
+    widget.controller.next();
   }
 
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        SingleChildScrollView(
-          child: MechanicServicesForm(controller: widget.mechanicController)
+        SizedBox(height: 32),
+
+        Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
+        Spacer() : SizedBox.shrink()),
+
+        Obx(() => widget.mechanicController.mechanic.value.services.length > 0 ?
+          Expanded(child:Padding(
+            padding: EdgeInsets.only(left: 32, right: 0),
+            child: SingleChildScrollView(
+              child: MechanicServicesForm(controller: widget.mechanicController)
+            )
+          )) : 
+          SizedBox.shrink()
         ),
 
-        Obx(() {
-          if (widget.mechanicController.mechanic.value.services.length < 100) {
-            return RaisedButton(
-              onPressed: () {
-                widget.mechanicController.mechanic.value.services.add(MechanicSkill());
-                widget.mechanicController.mechanic.refresh();
-              },
-              child: Text('add')
-            );
-          } else {
-            return SizedBox.shrink();
-          }
-        }),
+        Padding(
+          padding: EdgeInsets.only(left: 32, right: 8),
+          child: 
+          Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ? 
+            Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: RaisedButton(
+                    key: keys[0],
+                    onPressed: () async {
+                      widget.mechanicController.mechanic.value.services.add(MechanicSkill());
+                      widget.mechanicController.mechanic.refresh();
+                    },
+                    child: Text('Add a service')
+                  )
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: OutlinedButton(
+                    onPressed: () => submit(),
+                    child: Text('skip')
+                  ),
+                )
+              ]
+            ) :
+            Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: RaisedButton(
+                    onPressed: () async {
+                      widget.mechanicController.mechanic.value.services.add(MechanicSkill());
+                      widget.mechanicController.mechanic.refresh();
+                    },
+                    child: Text('Add more')
+                  )
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: RaisedButton(
+                    color: Colors.greenAccent,
+                    onPressed: () => submit(),
+                    child: Text('Next')
+                  ),
+                )
+              ]
+            ),
+          )
+        ),
 
-        RaisedButton(
-          onPressed: () => submit(),
-          child: Text('next')
-        )
+        Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
+        Spacer() : SizedBox.shrink()),
+
       ]
     );
   }

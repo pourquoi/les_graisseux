@@ -28,7 +28,7 @@ class OnboardingPage extends StatelessWidget {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text('onboarding.title'.tr),
+            title: Obx(() => Text(controller.title.value)),
             actions: [
               IconButton(
                   icon: Icon(Icons.close),
@@ -52,52 +52,68 @@ class OnboardingPage extends StatelessWidget {
               ),
             ),
             child: SafeArea(
-              child: Stack(
-                children: <Widget>[
-                  Obx(() => Text(controller.step.value.toString())),
-                  Positioned.fill(
-                    left: 32.0 + 8,
-                    child: AnimatedSwitcher(
-                      child: Obx(() {
-                        switch (controller.step.value) {
-                          case OnboardingStep.Profile:
-                            return StepProfile(key: Key('onboarding.profile'));
-                          
-                          case OnboardingStep.Account:
-                            return StepAccount(key: Key('onboarding.account'));
+              child: Theme(
+                data: ThemeData(buttonTheme: ButtonThemeData(buttonColor: Colors.yellow)),
+                child: Stack(
+                  children: <Widget>[
+                    Line(),
+                    Positioned.fill(
+                      left: 32.0 + 8,
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 250),
+                        child: Obx(() {
+                          switch (controller.step.value) {
+                            case OnboardingStep.Profile:
+                              return StepProfile(key: Key('onboarding.profile'));
+                            
+                            case OnboardingStep.Account:
+                              return StepAccount(key: Key('onboarding.account'));
 
-                          case OnboardingStep.Username:
-                            return StepUsername(key: Key('onboarding.username'));
+                            case OnboardingStep.Username:
+                              return StepUsername(key: Key('onboarding.username'));
 
-                          case OnboardingStep.JobServices:
-                            return StepJobServices(key: Key('onboarding.job_services'));
-                          
-                          case OnboardingStep.JobVehicle:
-                            return StepJobVehicle(key: Key('onboarding.job_vehicle'));
+                            case OnboardingStep.JobServices:
+                              return StepJobServices(key: Key('onboarding.job_services'));
+                            
+                            case OnboardingStep.JobVehicle:
+                              return StepJobVehicle(key: Key('onboarding.job_vehicle'));
 
-                          case OnboardingStep.MechanicServices:
-                            return StepMechanicServices(key: Key('onboarding.mechanic_services'));
+                            case OnboardingStep.MechanicServices:
+                              return StepMechanicServices(key: Key('onboarding.mechanic_services'));
 
-                          case OnboardingStep.Address:
-                            return StepAddress(key: Key('onboarding.address'));
+                            case OnboardingStep.Address:
+                              return StepAddress(key: Key('onboarding.address'));
 
-                          case OnboardingStep.Description:
-                            return StepDescription(key: Key('onboarding.description'));
+                            case OnboardingStep.Description:
+                              return StepDescription(key: Key('onboarding.description'));
 
-                          case OnboardingStep.Completed:
-                            return StepCompleted(key: Key('onboarding.completed'));
+                            case OnboardingStep.Completed:
+                              return StepCompleted(key: Key('onboarding.completed'));
 
-                          default:
-                            return StepProfile(key: Key('onboarding.profile'));
-                        }
-                      }),
-                      duration: Duration(milliseconds: 1250),
+                            default:
+                              return StepProfile(key: Key('onboarding.profile'));
+                          }
+                        }),
+                      )
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            )
           ),
         ));
+  }
+}
+
+class Line extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 32.0 + 32 + 8,
+      top: 40,
+      bottom: 0,
+      width: 1,
+      child: Container(color: Colors.white.withOpacity(0.5)),
+    );
   }
 }

@@ -42,12 +42,17 @@ class ApplicationVoter extends Voter
 
         switch($attribute) {
             case 'READ_APPLICATION':
-                return $current_user->isAdmin() ||
-                        $current_user->getId() == $application->getJob()->getCustomer()->getUser()->getId() ||
-                        $current_user->getId() == $application->getMechanic()->getUser()->getId()
+                if ($current_user->isAdmin())
+                    return true;
+
+                return $current_user->getId() == $application->getJob()->getCustomer()->getUser()->getId() ||
+                    $current_user->getId() == $application->getMechanic()->getUser()->getId()
                     ;
             case 'CREATE_APPLICATION':
-                return $current_user->isAdmin() || $current_user->getMechanic() !== null;
+                if ($current_user->isAdmin())
+                    return true;
+
+                return $current_user->getMechanic() !== null;
         }
     }
 

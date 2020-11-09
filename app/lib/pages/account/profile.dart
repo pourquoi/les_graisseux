@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/models/mechanic.dart';
 import 'package:app/widgets/ui/drawer.dart';
 import 'package:flutter/material.dart';
@@ -24,17 +26,13 @@ class ProfilePage extends StatefulWidget
 class _ProfilePageState extends State<ProfilePage>
 {
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Account')),
-      drawer: AppDrawer(),
-      body: SafeArea(child: Obx(() {
-        if (widget.appController.profileType.value == ProfileType.Customer) {
-          return CustomerProfilePage();
-        } else {
-          return MechanicProfilePage();
-        }
-      }))
-    );
+    return Obx(() {
+      if (widget.appController.profileType.value == ProfileType.Customer) {
+        return CustomerProfilePage();
+      } else {
+        return MechanicProfilePage();
+      }
+    });
   }
 }
 
@@ -43,6 +41,40 @@ class MechanicProfilePage extends StatefulWidget
   final AccountMechanicController controller = Get.find();
 
   _MechanicProfilePageState createState() => _MechanicProfilePageState();
+}
+
+class _MechanicProfilePageState extends State<MechanicProfilePage>
+{
+  void initState() {
+    super.initState();
+    widget.controller.load();
+  }
+
+  Widget build(BuildContext context)
+  {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          bottom: TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.directions_car)),
+              Tab(icon: Icon(Icons.directions_transit)),
+              Tab(icon: Icon(Icons.directions_bike)),
+            ],
+          ),
+          title: Text('Mechanic Account'),
+        ),
+        body: TabBarView(
+          children: [
+            MechanicInfoTab(),
+            MechanicServicesTab(),
+            Icon(Icons.directions_bike),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class MechanicServicesForm extends StatelessWidget
@@ -56,57 +88,66 @@ class MechanicServicesForm extends StatelessWidget
       if (controller.mechanic.value.services.length > 0) {
         return Column(
           children: controller.mechanic.value.services.map((mservice) {
-            return Row(
-              children: [
-                Column(
-                  children: [
-                    Row(children: [
-                      RaisedButton(
-                        onPressed: () async {
-                          ServiceTree service = await Get.to(ServicePicker());
-                          if (service != null) {
-                            mservice.service = service;
-                            controller.mechanic.refresh();
-                          }
-                        },
-                        child: Text(mservice.service != null ? mservice.service.label : 'pick')
-                      ),
-                    ]),
-                    
-                    Row(children: [
-                      RaisedButton(
-                        onPressed: () async {
-                          VehicleTree vehicle = await Get.to(VehiclePicker());
-                          if (vehicle != null) {
-                            mservice.vehicle = vehicle;
-                            controller.mechanic.refresh();
-                          }
-                        },
-                        child: Text(mservice.vehicle != null ? mservice.vehicle.name : 'pick')
-                      ),
-                    ]),
-
-                    Row(children: [
-                      StarRating(
-                        value: mservice.skill,
-                        filledStar: Icons.build_circle,
-                        unfilledStar: Icons.build_circle_outlined,
-                        onChanged: (v) {
-                          print(v);
-                          mservice.skill = v;
+            return Card(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          controller.mechanic.value.services.remove(mservice);
                           controller.mechanic.refresh();
-                        },)
-                    ]),
-                  ]
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    controller.mechanic.value.services.remove(mservice);
-                    controller.mechanic.refresh();
-                  }
-                )
-              ]
+                        }
+                      )
+                    ]
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.car_repair),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () async {
+                        VehicleTree vehicle = await Get.to(VehiclePicker());
+                        if (vehicle != null) {
+                          mservice.vehicle = vehicle;
+                          controller.mechanic.refresh();
+                        }
+                      },
+                    ),
+                    title: mservice.vehicle != null ? Text(mservice.vehicle.name) : Text('-'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.build_rounded),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () async {
+                        ServiceTree service = await Get.to(ServicePicker());
+                        if (service != null) {
+                          mservice.service = service;
+                          controller.mechanic.refresh();
+                        }
+                      },
+                    ),
+                    title: mservice.service != null ? Text(mservice.service.label) : Text('-'),
+                  ),
+                  ListTile(
+                    title: Center(child: StarRating(
+                      value: mservice.skill,
+                      filledStar: Icons.build_circle,
+                      unfilledStar: Icons.build_circle_outlined,
+                      onChanged: (v) {
+                        mservice.skill = v;
+                        controller.mechanic.refresh();
+                      }
+                    )),
+                    subtitle: Center(child: Text('competence')),
+
+                  )
+                ]
+              )
             );
           }).toList()
         );
@@ -117,18 +158,70 @@ class MechanicServicesForm extends StatelessWidget
   }
 }
 
-class _MechanicProfilePageState extends State<MechanicProfilePage>
+class MechanicServicesTab extends StatefulWidget
+{
+  final AccountMechanicController controller = Get.find();
+  
+  _MechanicServicesTabState createState() => _MechanicServicesTabState();
+}
+
+class _MechanicServicesTabState extends State<MechanicServicesTab>
+{
+  void initState() {
+    super.initState();
+    print('_MechanicServicesTabState.initState');
+  }
+
+  void submit() async {
+    await widget.controller.submit();
+  }
+
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          MechanicServicesForm(controller: widget.controller),
+          RaisedButton(
+            onPressed: () {
+              widget.controller.mechanic.value.services.add(MechanicSkill());
+              widget.controller.mechanic.refresh();
+            },
+            child: Text('add')
+          ),
+          RaisedButton(onPressed: () => submit(), child: Text('save'))
+        ]
+      )
+    );
+  }
+}
+
+class MechanicInfoTab extends StatefulWidget
+{
+  final AccountMechanicController controller = Get.find();
+
+  _MechanicInfoTabState createState() => _MechanicInfoTabState();
+}
+
+class _MechanicInfoTabState extends State<MechanicInfoTab>
 {
   TextEditingController _aboutController;
 
   final _formKey = GlobalKey<FormState>();
+  StreamSubscription _stream;
 
   void initState() {
+    print('_MechanicInfoTabState.initState');
     super.initState();
     _aboutController = TextEditingController();
-    widget.controller.load().then((_) {
-      _aboutController.text = widget.controller.mechanic.value.about;
+
+    _stream = widget.controller.mechanic.listen((m) { 
+      _aboutController.text = m.about;
     });
+  }
+
+  void dispose() {
+    _stream.cancel();
+    super.dispose();
   }
 
   void submit() async {
@@ -141,17 +234,9 @@ class _MechanicProfilePageState extends State<MechanicProfilePage>
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Form(
-      key: _formKey,
-      child: Column(
+        key: _formKey,
+        child: Column(
         children: [
-          MechanicServicesForm(controller: widget.controller),
-          RaisedButton(
-            onPressed: () {
-              widget.controller.mechanic.value.services.add(MechanicSkill());
-              widget.controller.mechanic.refresh();
-            },
-            child: Text('add')
-          ),
           TextFormField(
             controller: _aboutController,
             decoration: InputDecoration(
@@ -181,6 +266,27 @@ class CustomerProfilePage extends StatefulWidget
 class _CustomerProfilePageState extends State<CustomerProfilePage>
 {
   Widget build(BuildContext context) {
-    return SizedBox.shrink();
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          bottom: TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.directions_car)),
+              Tab(icon: Icon(Icons.directions_transit)),
+              Tab(icon: Icon(Icons.directions_bike)),
+            ],
+          ),
+          title: Text('Mechanic Account'),
+        ),
+        body: TabBarView(
+          children: [
+            Icon(Icons.directions_car),
+            Icon(Icons.directions_transit),
+            Icon(Icons.directions_bike),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -60,8 +60,12 @@ class _StepDescriptionState extends State<StepDescription>
       key: _formKey,
       child: Column(
         children: [
+          SizedBox(height: 32),
+          Spacer(),
           Obx(() => widget.controller.profileType.value == ProfileType.Customer ?
-            TextFormField(
+            Padding(
+            padding: EdgeInsets.only(left: 64, right: 8),
+            child: TextFormField(
               controller: _titleController,
               decoration: InputDecoration(
                 icon: Icon(Icons.lock), 
@@ -74,25 +78,39 @@ class _StepDescriptionState extends State<StepDescription>
                 }
                 return null;
               },
-            ) : SizedBox.shrink()),
-          TextFormField(
-            controller: _descriptionController,
-            decoration: InputDecoration(
-              icon: Icon(Icons.lock), 
-              labelText: 'Description', 
-              hintText: 'description'
-            ),
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'input.required';
-              }
-              return null;
-            },
+            )) : 
+            SizedBox.shrink()
           ),
-          RaisedButton(
-            onPressed: () => submit(),
-            child: Text('Ok')
-          )
+          Padding(
+            padding: EdgeInsets.only(left: 64, right: 8),
+            child: TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                icon: Icon(Icons.lock), 
+                labelText: 'Description', 
+                hintText: 'description'
+              ),
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'input.required';
+                }
+                return null;
+              },
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 64, right: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Obx(() => RaisedButton(
+                  onPressed: () => widget.controller.loading.value ? null : submit(),
+                  child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+                )),
+              ]
+            )
+          ),
+          Spacer()
         ],
       )
     );

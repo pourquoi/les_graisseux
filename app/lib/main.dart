@@ -3,6 +3,7 @@ import 'package:app/pages/account/profile.dart';
 import 'package:app/pages/chat/room.dart';
 import 'package:app/pages/chat/rooms.dart';
 import 'package:app/services/endpoints/chat.dart';
+import 'package:app/widgets/version.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui' as ui;
@@ -35,6 +36,7 @@ import 'package:app/pages/account/job.dart';
 import 'package:app/pages/account/jobs.dart';
 import 'package:app/pages/onboarding.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info/package_info.dart';
 
 void main() async {
   runApp(MyAppBuilder());
@@ -67,28 +69,67 @@ Future<dynamic> bootstrap() async {
   return true;
 }
 
+class SplashImage extends StatefulWidget
+{
+  SplashImage({Key key}) : super(key: key);
+  _SplashImageState createState() => _SplashImageState();
+}
+
+class _SplashImageState extends State<SplashImage>
+{
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child: Image(image: AssetImage('assets/images/garage-1.jpg'), fit: BoxFit.cover)
+    );
+  }
+}
+
 class MyAppBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
+    Messages messages = Messages();
+    String title = messages.keys.containsKey(ui.window.locale.languageCode) ? 
+          messages.keys[ui.window.locale.languageCode]['app.title'] :
+          messages.keys['en']['app.title'];
+    
     return FutureBuilder<dynamic>(
-        future: bootstrap(),
+        future: Future.wait([bootstrap(), Future.delayed(Duration(seconds: 3))]),
         builder: (context, snapshot) {
           Widget content;
           if (snapshot.hasData) {
             content = MyApp();
           } else {
-            content = Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromRGBO(76, 61, 243, 1),
-                    Color.fromRGBO(120, 58, 183, 1),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                )
-              ),
-              child: Center(
-                child: Image(image: AssetImage('assets/images/logo.jpg'), width: 150)
+            content = MaterialApp(
+              key: Key('splash'),
+              locale: ui.window.locale,
+              home: Stack(
+                children: [
+                  SplashImage(),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromRGBO(76, 61, 243, 0.5),
+                          Color.fromRGBO(120, 58, 183, 0.2),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      )
+                    ),
+                    child: Center(
+                      child: Text(title.toUpperCase(), style: TextStyle(color: Colors.white, fontSize: 50, decoration: TextDecoration.none))
+                    )
+                  ),
+                  Positioned(
+                    bottom: 0, 
+                    left: 0,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: CurrentVersionText()
+                    )
+                  )
+                ]
               )
             );
           }
@@ -133,6 +174,7 @@ class MyApp extends StatelessWidget {
       fallbackLocale: Locale('en', 'US'),
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       initialRoute: initialRoute,

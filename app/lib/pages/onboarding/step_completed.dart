@@ -15,12 +15,18 @@ class StepCompleted extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        RaisedButton(
-          onPressed: () {
-            Get.offAndToNamed(routes.account);
-          }, 
-          child: Text('Go to account')
-        )
+        SizedBox(height: 32),
+        Spacer(),
+        Padding(
+          padding: EdgeInsets.only(left: 64, right: 32),
+          child: RaisedButton(
+            onPressed: () {
+              Get.offAndToNamed(routes.account);
+            }, 
+            child: Text('Go to account')
+          )
+        ),
+        Spacer()
       ],
     );
   }

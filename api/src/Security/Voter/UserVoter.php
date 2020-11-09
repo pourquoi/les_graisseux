@@ -38,7 +38,10 @@ class UserVoter extends Voter
         switch($attribute) {
             case 'EDIT_USER':
             case 'DELETE_USER':
-                return $current_user->isAdmin() || $current_user->getId() == $user->getId();
+                if ($current_user->isAdmin())
+                    return true;
+
+                return $current_user->getId() == $user->getId();
         }
     }
 

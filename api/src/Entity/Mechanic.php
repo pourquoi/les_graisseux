@@ -53,7 +53,7 @@ class Mechanic
     /**
      * @var string
      * @ORM\Column(type="text")
-     * @Groups({"read"})
+     * @Groups({"read", "write"})
      */
     protected $about;
 

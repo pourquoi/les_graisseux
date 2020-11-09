@@ -73,9 +73,10 @@ class MechanicTest extends Base
         /** @var ServiceTree $service */
         $service = $container->get('doctrine')->getRepository(ServiceTree::class)->findAll()[0];
 
-        self::login($client, 'empty@example.com', 'pass1234');
+        $auth = self::login($client, 'empty@example.com', 'pass1234');
 
         $response = $client->request('POST', '/api/mechanics', ['json'=>[
+            'user' => '/api/users/' . $auth['uid'],
             'about' => 'hello',
             'address' => [
                 'country' => 'FR',
@@ -84,15 +85,20 @@ class MechanicTest extends Base
             'services' => [
                 [
                     'skill' => 5,
-                    'service' => '/api/services/'.$service->getId(),
-                    'vehicle' => '/api/vehicles/'.$vehicle->getId(),
+                    'service' => '/api/services/' . $service->getId(),
+                    'vehicle' => '/api/vehicles/' . $vehicle->getId(),
                 ]
             ]
         ]]);
         $this->assertResponseIsSuccessful();
 
         $mechanic = $response->toArray();
+
+        $response = $client->request('PUT', '/api/mechanics/' . $mechanic['id'], ['json'=>$mechanic]);
+        $this->assertResponseIsSuccessful();
+
         $response = $client->request('PUT', '/api/mechanics/' . $mechanic['id'], ['json'=>[
+            'user' => '/api/users/' . $auth['uid'],
             'about' => 'hello',
             'address' => [
                 'country' => 'FR',

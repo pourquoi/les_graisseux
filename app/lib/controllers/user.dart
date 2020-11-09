@@ -73,6 +73,8 @@ class UserController extends GetxController {
   Future logout() async {
     token.nil();
     status.value = UserStatus.loggedout;
+    user.value = User(email: user.value.email, username: user.value.username);
+    saveToStorage();
   }
 
   Future register({@required String email, @required String password}) async {

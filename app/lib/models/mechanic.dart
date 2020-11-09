@@ -57,11 +57,11 @@ class Mechanic extends HydraResource {
     Map<String, dynamic> data = {
       'id': id,
       'about': about,
-      'services': services.map((s) => s.toJson(context: context)).toList()
+      'services': services.map((s) => s.hydraId != null ? s.hydraId : s.toJson(context: context)).toList()
     };
 
     if (user != null) {
-      data['user'] = user.hydraId;
+      //data['user'] = user.hydraId;
     }
 
     return data..addAll(super.toJson(context: context));

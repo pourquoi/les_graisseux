@@ -158,6 +158,9 @@ class User implements UserInterface
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
+        if (!$this->isEmailVerificationRequired() )
+            $roles[] = 'ROLE_USER_VERIFIED';
+
         if ($this->isAdmin())
             $roles[] = 'ROLE_ADMIN';
 

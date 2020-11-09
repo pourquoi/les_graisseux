@@ -55,21 +55,21 @@ class MechanicService
      * @var Mechanic
      * @ORM\ManyToOne(targetEntity="Mechanic", inversedBy="services")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"mechanic_service:read", "write"})
+     * @Groups({"mechanic_service:read", "mechanic_service:write"})
      */
     protected $mechanic;
 
     /**
      * @var VehicleTree
      * @ORM\ManyToOne(targetEntity="VehicleTree")
-     * @Groups({"read", "write"})
+     * @Groups({"read", "mechanic_service:write", "mechanic:write"})
      */
     protected $vehicle;
 
     /**
      * @var ServiceTree
      * @ORM\ManyToOne(targetEntity="ServiceTree")
-     * @Groups({"read", "write"})
+     * @Groups({"read", "mechanic_service:write", "mechanic:write"})
      */
     protected $service;
 

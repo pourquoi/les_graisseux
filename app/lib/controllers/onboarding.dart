@@ -29,6 +29,8 @@ abstract class OnboardingStepController {
   OnboardingStep prev();
 
   bool get disabled => false;
+
+  String get title => '';
 }
 
 class OnboardingProfile with OnboardingStepController {
@@ -49,7 +51,6 @@ class OnboardingProfile with OnboardingStepController {
 
   void selectProfile(ProfileType type) {
     _controller.profileType.value = type;
-    _controller.next();
   }
 }
 
@@ -110,6 +111,8 @@ class OnboardingJobServices with OnboardingStepController {
   OnboardingController _controller;
 
   OnboardingJobServices(this._controller);
+
+  String get title => 'onboarding.job_services.title'.tr;
 
   OnboardingStep next() {
     if (_controller.jobController.job.value.tasks.isNotEmpty)
@@ -242,6 +245,7 @@ class OnboardingController extends GetxController {
   final profileType = ProfileType.Undefined.obs;
   final step = OnboardingStep.Profile.obs;
   final loading = false.obs;
+  final title = ''.obs;
 
   Map<OnboardingStep, OnboardingStepController> steps;
 
@@ -259,6 +263,8 @@ class OnboardingController extends GetxController {
     userController = Get.find<UserController>();
     jobController = Get.find<AccountJobController>();
     mechanicController = Get.find<AccountMechanicController>();
+
+    jobController.initJob();
 
     try {
       profileType.value = Get.arguments['type'];
@@ -286,11 +292,14 @@ class OnboardingController extends GetxController {
 
     if (profileType.value != ProfileType.Customer && profileType.value != ProfileType.Mechanic) {
       step.value = OnboardingStep.Profile;
+      title.value = 'onboarding.title.register'.tr;
     } else {
       if (profileType.value == ProfileType.Customer) {
         step.value = OnboardingStep.JobServices;
+        title.value = 'onboarding.title.job'.tr;
       } else {
         step.value = OnboardingStep.MechanicServices;
+        title.value = 'onboarding.title.mechanic'.tr;
       }
     }
   }
