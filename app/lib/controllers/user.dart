@@ -23,7 +23,6 @@ class UserController extends GetxController {
   Future bootstrap() async {
     api = Get.find<ApiService>();
     userService = Get.find<UserService>();
-    loadFromStorage();
     api.token = token;
     await loadFromStorage();
   }

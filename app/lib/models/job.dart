@@ -18,6 +18,8 @@ class Job extends HydraResource {
 
   JobApplication application;
 
+  bool mine;
+
   Job({this.id, this.customer, this.vehicle});
 
   Job.fromJson(Map<String, dynamic> json, {Map<String, dynamic> context}) { 
@@ -41,6 +43,7 @@ class Job extends HydraResource {
     id = json['id'];
     title = json['title'];
     description = json['description'];
+    mine = json['mine'];
 
     context[CTX_MAP_BY_IDS][json['@id']] = this;
 

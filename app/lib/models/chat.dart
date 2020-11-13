@@ -1,4 +1,5 @@
 import 'package:app/models/common.dart';
+import 'package:app/models/job_application.dart';
 import 'package:app/models/user.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -9,6 +10,8 @@ class ChatRoom extends HydraResource
   String uuid;
   DateTime createdAt;
   List<ChatUser> users = List<ChatUser>();
+  JobApplication application;
+  ChatMessage lastMessage;
 
   ChatRoom({this.id, this.uuid, this.users}) {
     if (uuid == null) uuid = Uuid().v4();
@@ -33,6 +36,8 @@ class ChatRoom extends HydraResource
     if (context == null) context = initContext();
     super.parseJson(json, context: context);
 
+    context[CTX_MAP_BY_IDS][json['@id']] = this;
+
     id = json['id'];
     uuid = json['uuid'];
     createdAt = DateTime.parse(json['created_at']);
@@ -52,6 +57,26 @@ class ChatRoom extends HydraResource
           .where((v) => v != null)
           .toList()
           .cast<ChatUser>();
+    }
+
+    if (json.containsKey('application') && json['application'] != null) {
+      if (json['application'] is String) {
+        application = context[CTX_MAP_BY_IDS].containsKey(json['application'])
+            ? context[CTX_MAP_BY_IDS][json['application']]
+            : null;
+      } else {
+        application = JobApplication.fromJson(json['application'], context: context);
+      }
+    }
+
+    if (json.containsKey('last_message') && json['last_message'] != null) {
+      if (json['last_message'] is String) {
+        lastMessage = context[CTX_MAP_BY_IDS].containsKey(json['last_message'])
+            ? context[CTX_MAP_BY_IDS][json['last_message']]
+            : null;
+      } else {
+        lastMessage = ChatMessage.fromJson(json['last_message'], context: context);
+      }
     }
   }
 

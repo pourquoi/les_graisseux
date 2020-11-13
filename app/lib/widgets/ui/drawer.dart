@@ -38,6 +38,10 @@ class AppDrawer extends StatelessWidget
             }
           }),
 
+          ListTile(
+            title: RaisedButton(onPressed: () => Get.toNamed(routes.home), child: Text('home'))
+          ),
+
           Obx(() {
             if (userController.status.value == UserStatus.loggedin) {
               User user = userController.user.value;

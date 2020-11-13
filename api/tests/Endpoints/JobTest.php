@@ -45,12 +45,19 @@ class JobTest extends Base
         $response = $client->request('GET', '/api/jobs?customer.user=' . $alice->getId());
         $this->assertResponseIsSuccessful();
         $data = $response->toArray();
-        $applicationCount = 0;
+        $hasApplication = false;
         foreach($data['hydra:member'] as $job) {
-            if (null !== $job['application'])
-                $applicationCount++;
+            if (null !== $job['application']) {
+                $hasApplication = true;
+                break;
+            }
         }
-        $this->assertGreaterThan(0, $applicationCount);
+        $this->assertTrue($hasApplication);
+
+        $response = $client->request('GET', '/api/jobs/' . $job['id']);
+        $job = $response->toArray();
+        $this->assertArrayHasKey('application', $job);
+        $this->assertIsArray($job['application']);
     }
 
     public function testCreate(): void
@@ -117,31 +124,6 @@ class JobTest extends Base
 
 
         $response = $client->request('PUT', '/api/jobs/' . $job['id'], ['json'=>$job]);
-        $this->assertResponseIsSuccessful();
-    }
-
-    public function testApplyToJob(): void
-    {
-        $client = static::createClient();
-        $container = self::$kernel->getContainer();
-
-        $customer = $container->get('doctrine')->getRepository(User::class)->findOneByEmail('alice@example.com')->getCustomer();
-
-        $user = $container->get('doctrine')->getRepository(User::class)->findOneByEmail('roger@example.com');
-        $job = $container->get('doctrine')->getRepository(Job::class)->findOneByCustomer($customer);
-
-        self::login($client, 'roger@example.com', 'pass1234');
-
-        $response = $client->request('GET', '/api/jobs');
-        foreach($response->toArray()['hydra:member'] as $job) {
-            if ($job['application'] == null) {
-                break;
-            }
-        }
-        $response = $client->request('POST', '/api/job_applications', ['json'=>[
-            'mechanic' => '/api/mechanics/' . $user->getMechanic()->getId(),
-            'job' => $job['@id']
-        ]]);
         $this->assertResponseIsSuccessful();
     }
 }

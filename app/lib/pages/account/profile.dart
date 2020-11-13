@@ -1,7 +1,14 @@
 import 'dart:async';
 
+import 'package:app/controllers/account/applications.dart';
+import 'package:app/controllers/mechanic.dart';
+import 'package:app/controllers/user.dart';
+import 'package:app/models/job_application.dart';
 import 'package:app/models/mechanic.dart';
+import 'package:app/services/crud_service.dart';
+import 'package:app/services/endpoints/job.dart';
 import 'package:app/widgets/ui/drawer.dart';
+import 'package:app/widgets/ui/profile_picture.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,10 +22,11 @@ import 'package:app/controllers/app.dart';
 import 'package:app/pages/service_picker.dart';
 import 'package:app/pages/vehicle_picker.dart';
 import 'package:app/widgets/ui/stars.dart';
+import 'package:app/routes.dart' as routes;
 
 class ProfilePage extends StatefulWidget
 {
-  AppController appController = Get.find();
+  final AppController appController = Get.find();
 
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -38,7 +46,9 @@ class _ProfilePageState extends State<ProfilePage>
 
 class MechanicProfilePage extends StatefulWidget
 {
+  final AppController appController = Get.find();
   final AccountMechanicController controller = Get.find();
+  final JobApplicationsController jobApplicationsController = Get.put(JobApplicationsController());
 
   _MechanicProfilePageState createState() => _MechanicProfilePageState();
 }
@@ -56,6 +66,14 @@ class _MechanicProfilePageState extends State<MechanicProfilePage>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            IconButton(
+              icon: Icon(Icons.switch_account) ,
+              onPressed: () {
+                widget.appController.toggleProfile();
+              }
+            )
+          ],
           bottom: TabBar(
             tabs: [
               Tab(icon: Icon(Icons.directions_car)),
@@ -65,13 +83,16 @@ class _MechanicProfilePageState extends State<MechanicProfilePage>
           ),
           title: Text('Mechanic Account'),
         ),
-        body: TabBarView(
-          children: [
-            MechanicInfoTab(),
-            MechanicServicesTab(),
-            Icon(Icons.directions_bike),
-          ],
-        ),
+        body: 
+            TabBarView(
+              children: [
+                MechanicInfoTab(),
+                MechanicServicesTab(),
+                MechanicApplicationsPage()
+              ],
+            ),
+          
+        
       ),
     );
   }
@@ -237,6 +258,7 @@ class _MechanicInfoTabState extends State<MechanicInfoTab>
         key: _formKey,
         child: Column(
         children: [
+          ProfilePictureWidget(),
           TextFormField(
             controller: _aboutController,
             decoration: InputDecoration(
@@ -258,8 +280,67 @@ class _MechanicInfoTabState extends State<MechanicInfoTab>
   }
 }
 
+class MechanicApplicationsPage extends StatefulWidget
+{
+  final JobApplicationsController controller = Get.find();
+  _MechanicApplicationsState createState() => _MechanicApplicationsState();
+}
+
+class _MechanicApplicationsState extends State<MechanicApplicationsPage>
+{
+  JobApplicationQueryParameters params;
+  PaginatedQueryResponse<JobApplication> applications;
+
+  void initState() {
+    super.initState();
+    print('_MechanicApplicationsState.initState');
+    widget.controller.load();
+  }
+
+  Widget build(_) {
+    return Obx(() {
+      return ListView.builder(
+        itemCount: widget.controller.items.length + 1,
+        itemBuilder: (_, idx) {
+          if (idx < widget.controller.items.length) {
+            return Card(
+              child: GestureDetector(
+                onTap: () {
+                  Get.toNamed(routes.job.replaceFirst(':job', widget.controller.items[idx].job.id.toString()));
+                },
+                child: Column(
+                  children: [
+                    Text('${widget.controller.items[idx].id}'),
+                    Text('${widget.controller.items[idx].job.title}')
+                  ]
+                )
+              )
+            );
+          } else if (idx == widget.controller.items.length) {
+            if (widget.controller.pagination.value.next != null) {
+              widget.controller.more();
+              return Center(child:CircularProgressIndicator());
+            } else {
+              return Container(
+                color: Colors.blueGrey,
+                child: Center(child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text('end of results'.toUpperCase(), style: TextStyle(color: Colors.grey, fontSize: 10))
+                ))
+              );
+            }
+          } else {
+            return Container();
+          }
+        },
+      );
+    });
+  }
+}
+
 class CustomerProfilePage extends StatefulWidget
 {
+  final AppController appController = Get.find();
   _CustomerProfilePageState createState() => _CustomerProfilePageState();
 }
 
@@ -270,6 +351,14 @@ class _CustomerProfilePageState extends State<CustomerProfilePage>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+          actions: [
+            IconButton(
+              icon: Icon(Icons.switch_account) ,
+              onPressed: () {
+                widget.appController.toggleProfile();
+              }
+            )
+          ],
           bottom: TabBar(
             tabs: [
               Tab(icon: Icon(Icons.directions_car)),
@@ -277,7 +366,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage>
               Tab(icon: Icon(Icons.directions_bike)),
             ],
           ),
-          title: Text('Mechanic Account'),
+          title: Text('Customer Account'),
         ),
         body: TabBarView(
           children: [

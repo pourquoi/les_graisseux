@@ -46,4 +46,12 @@ class AppController extends GetxController {
     box.write("app.profile_type", profileType.value.toString());
     box.write("app.onboarding_skipped", onboardingSkipped.value);
   }
+
+  void toggleProfile() {
+    if (profileType.value == ProfileType.Mechanic) {
+      profileType.value = ProfileType.Customer;
+    } else {
+      profileType.value = ProfileType.Mechanic;
+    }
+  }
 }

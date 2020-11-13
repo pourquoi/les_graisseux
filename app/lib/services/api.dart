@@ -83,8 +83,6 @@ class ApiService extends GetxService {
             options.headers['Authorization'] = "Bearer ${token.value}";
           else if (options.headers.containsKey('Authorization'))
             options.headers.remove('Authorization');
-
-          print(options.headers);
         },
         onResponse: (Response response) async {},
         onError: (DioError e) async {

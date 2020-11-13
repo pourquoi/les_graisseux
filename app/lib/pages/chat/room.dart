@@ -41,7 +41,6 @@ class _ChatRoomPageState extends State<ChatRoomPage>
   }
 
   Widget buildRow(BuildContext context, int idx) {
-    print('${widget.controller.roomMessages[idx].message} ${idx}');
     return GestureDetector(
       onTap: () {
         
@@ -84,7 +83,6 @@ class _ChatRoomPageState extends State<ChatRoomPage>
           }
         })
       ),
-      drawer: AppDrawer(),
       body: 
         Column(
           mainAxisSize: MainAxisSize.min,

@@ -51,8 +51,6 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    App\Filter\DistanceFilter: ~
-
     App\Utils\TokenManager:
         public: true
 
@@ -64,10 +62,19 @@ services:
         decorates: 'api_platform.jsonld.normalizer.item'
         arguments: [ '@App\Serializer\ComposedResourceNormalizer.inner' ]
 
+    App\Filter\DistanceFilter: ~
+
+    Liip\ImagineBundle\Service\FilterService:
+        alias: 'liip_imagine.service.filter'
+
+    # inject defaults doctrine data providers
+
     App\DataProvider\JobDataProvider:
         bind:
             $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
             $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
 
-    Liip\ImagineBundle\Service\FilterService:
-        alias: 'liip_imagine.service.filter'
+    App\DataProvider\ChatRoomDataProvider:
+        bind:
+            $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+            $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'

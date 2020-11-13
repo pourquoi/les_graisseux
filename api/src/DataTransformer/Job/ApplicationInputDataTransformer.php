@@ -62,28 +62,29 @@ class ApplicationInputDataTransformer implements DataTransformerInterface
 
         $previous_applications = $this->applicationRepository->findBy(['job'=>$data->job, 'mechanic'=>$mechanic]);
         if ( count($previous_applications) ) {
-            // @todo
-            throw new \InvalidArgumentException();
+            $application = $previous_applications[0];
         }
 
         $application->setJob($data->job);
         $application->setMechanic($mechanic);
 
-        $chatRoom = new ChatRoom();
-        $chatUserMechanic = new ChatUser();
-        $chatUserMechanic->setUser($mechanic->getUser());
-        $chatUserCustomer = new ChatUser();
-        $chatUserCustomer->setUser($data->job->getCustomer()->getUser());
-        $chatRoom->addUser($chatUserMechanic);
-        $chatRoom->addUser($chatUserCustomer);
+        if ($application->getChat() === null) {
+            $chatRoom = new ChatRoom();
+            $chatUserMechanic = new ChatUser();
+            $chatUserMechanic->setUser($mechanic->getUser());
+            $chatUserCustomer = new ChatUser();
+            $chatUserCustomer->setUser($data->job->getCustomer()->getUser());
+            $chatRoom->addUser($chatUserMechanic);
+            $chatRoom->addUser($chatUserCustomer);
 
-        $application->setChat($chatRoom);
+            $application->setChat($chatRoom);
 
-        if ($data->message) {
-            $message = new ChatMessage();
-            $message->setMessage($data->message);
-            $message->setUser($chatUserMechanic);
-            $chatRoom->addMessage($message);
+            if ($data->message) {
+                $message = new ChatMessage();
+                $message->setMessage($data->message);
+                $message->setUser($chatUserMechanic);
+                $chatRoom->addMessage($message);
+            }
         }
 
         return $application;

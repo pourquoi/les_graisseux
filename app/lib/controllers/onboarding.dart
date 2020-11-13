@@ -311,7 +311,6 @@ class OnboardingController extends GetxController {
 
     while( _currentStep != null ) {
       OnboardingStep next = steps[_currentStep].next();
-      print("current $_currentStep next $next");
       if (next != null) {
         if (steps[next].disabled) {
           _currentStep = next;
@@ -333,7 +332,6 @@ class OnboardingController extends GetxController {
 
     while (_currentStep != null) {
       OnboardingStep prev = steps[_currentStep].prev();
-      print("current $_currentStep prev $prev");
       if (prev != null) {
         if (steps[prev].disabled) {
           _currentStep = prev;

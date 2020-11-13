@@ -4,7 +4,7 @@ class Media extends HydraResource
 {
   int id;
   String url;
-  String thumb_url;
+  String thumbUrl;
 
   Media({this.url});
 
@@ -19,7 +19,7 @@ class Media extends HydraResource
 
     id = json['id'];
     url = json['content_url'];
-    thumb_url = json['thumb_url'];
+    thumbUrl = json['thumb_url'];
 
     context[CTX_MAP_BY_IDS][json['@id']] = this;
   }

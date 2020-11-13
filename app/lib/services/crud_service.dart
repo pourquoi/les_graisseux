@@ -40,9 +40,6 @@ class CrudService<T> extends GetxService {
   Map<String, dynamic> Function(T) toJson;
 
   PaginatedQueryResponse<T> _parseJsonList(Map<String, dynamic> data) {
-    print('CrudService._parseJsonList');
-    print(data);
-
     PaginatedQueryResponse<T> qr = PaginatedQueryResponse<T>();
 
       qr.items = data['hydra:member']
@@ -64,7 +61,6 @@ class CrudService<T> extends GetxService {
 
   Future<PaginatedQueryResponse<T>> search(PaginatedQueryParameters params) {
     print('CrudService.search');
-    print(params.toJson());
 
     return api.get('/api/$resource', queryParameters: params.toJson()..removeWhere((key, value) => value == null)).then((data) => _parseJsonList(data));
   }

@@ -65,19 +65,27 @@ class JobDataProvider implements ContextAwareCollectionDataProviderInterface, Re
         return $resourceClass == Job::class;
     }
 
-    private function fillContext(Job $job)
+    private function fillContext($jobs)
     {
-        $current_user = $this->security->getUser();
+        if (!is_array($jobs) ) $jobs = [$jobs];
 
-        if ($current_user instanceof User && $current_user->getMechanic()) {
-            $myApplications = $job->getApplications()->filter(function ($app) use ($current_user) {
-                return $app->getMechanic()->getUser()->getId() == $current_user->getId();
-            });
-            if( !$myApplications->isEmpty() ) $job->application = $myApplications[0];
-        }
+        /** @var Job $job */
+        foreach($jobs as $job) {
+            $current_user = $this->security->getUser();
 
-        if ($current_user instanceof User && $current_user->getId() == $job->getCustomer()->getUser()->getId()) {
-            $job->mine = true;
+            if ($current_user instanceof User && $current_user->getMechanic()) {
+                $application = $job->getApplications()->filter(function ($app) use ($current_user) {
+                    return $app->getMechanic() === $current_user->getMechanic();
+                })->first();
+
+                $job->application = $application ? $application : null;
+            }
+
+            if ($current_user instanceof User && $current_user->getId() == $job->getCustomer()->getUser()->getId()) {
+                $job->mine = true;
+            } else {
+                $job->mine = false;
+            }
         }
     }
 

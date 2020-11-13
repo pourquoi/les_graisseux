@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\JobApplicationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Dto\Job\ApplicationInput;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ApiResource(
@@ -32,6 +34,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *         }
  *     }
  * )
+ * @ApiFilter(SearchFilter::class, properties={"mechanic", "job", "job.customer"})
  * @ORM\Entity(repositoryClass=JobApplicationRepository::class)
  */
 class JobApplication
@@ -62,7 +65,7 @@ class JobApplication
      * @var Job
      * @ORM\ManyToOne(targetEntity="Job", inversedBy="applications")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"application:job:read", "application:list"})
+     * @Groups({"chat_room:read", "application:read", "application:list"})
      */
     protected $job;
 
@@ -77,7 +80,7 @@ class JobApplication
     /**
      * @var ChatRoom
      * @ORM\OneToOne(targetEntity="ChatRoom", inversedBy="application", cascade={"persist", "remove"})
-     * @Groups({"application:job:read", "application:list"})
+     * @Groups({"application:read", "application:list"})
      */
     protected $chat;
 

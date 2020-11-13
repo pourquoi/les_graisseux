@@ -121,7 +121,7 @@ class Job
 
     /**
      * @var JobApplication|null
-     * @Groups({"job:read"})
+     * @Groups({"read"})
      * @ApiProperty()
      */
     public $application;

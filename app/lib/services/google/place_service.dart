@@ -69,7 +69,6 @@ class PlaceApiProvider extends GetxService {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
         // compose suggestions in a list
-        print(result['predictions']);
         return result['predictions']
             .map<Suggestion>((p) => Suggestion(p['place_id'], p['description']))
             .toList();
@@ -91,7 +90,6 @@ class PlaceApiProvider extends GetxService {
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        print(result['result']);
         final components =
             result['result']['address_components'] as List<dynamic>;
         // build result

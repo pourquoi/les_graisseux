@@ -83,6 +83,13 @@ class ChatRoom
      */
     protected $messages;
 
+    /**
+     * @var ChatMessage|null
+     * @ApiProperty()
+     * @Groups("chat_room:read")
+     */
+    public $last_message;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();

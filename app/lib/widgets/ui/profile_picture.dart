@@ -56,8 +56,8 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
           return Stack(
             children: [
               Container(
-                width: 72,
-                height: 72,
+                width: 172,
+                height: 172,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.green
@@ -66,7 +66,7 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
                   Obx(() {
                     if (widget.userController.user.value.avatar != null) {
                       return CircleAvatar(
-                        backgroundImage: NetworkImage(widget.userController.user.value.avatar.thumb_url),
+                        backgroundImage: NetworkImage(widget.userController.user.value.avatar.thumbUrl),
                         onBackgroundImageError: (error, __) {
                           print(error);
                         },
@@ -91,19 +91,19 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
                     child: Container(
                       color: Colors.transparent,
                       child: SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 40,
+                      height: 40,
                       child: CircularProgressIndicator(backgroundColor: Colors.white,),
                     ))
                   )
                 :
                    Positioned(
-                    bottom: -15,
-                    right: -15,
+                    bottom: -5,
+                    right: -5,
                     child: Container(
                       color: Colors.transparent,
                       child: IconButton(
-                        iconSize: 20,
+                        iconSize: 40,
                         icon: Icon(Icons.edit, color: Colors.white), 
                         onPressed: () => edit()
                       )

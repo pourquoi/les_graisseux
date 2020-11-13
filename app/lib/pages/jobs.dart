@@ -27,7 +27,6 @@ class _JobsPageState extends State<JobsPage> {
 
   Widget build(BuildContext context) {
       return Scaffold(
-        drawer: AppDrawer(),
         body: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: <Widget>[
@@ -151,6 +150,8 @@ class _JobsPageState extends State<JobsPage> {
             child: Text('${widget.controller.items[idx].id} ${idx}' +
               (widget.controller.items[idx].title ?? ''))
           ),
+          Text('applied: ' + (widget.controller.items[idx].application != null ? 'yes' : 'no')),
+          Text('mine: ' + (widget.controller.items[idx].mine ? 'yes' : 'no')),
           Container(color: Colors.grey, height: 3)
         ]
       )

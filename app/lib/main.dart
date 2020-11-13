@@ -52,6 +52,7 @@ Future<dynamic> bootstrap() async {
   Get.lazyPut<VehicleTreeService>(() => VehicleTreeService());
   Get.lazyPut<MechanicService>(() => MechanicService());
   Get.lazyPut<JobService>(() => JobService());
+  Get.lazyPut<JobApplicationService>(() => JobApplicationService());
   Get.lazyPut<CustomerService>(() => CustomerService());
   Get.lazyPut<ChatRoomService>(() => ChatRoomService());
   Get.lazyPut<ChatMessageService>(() => ChatMessageService());
@@ -98,7 +99,7 @@ class MyAppBuilder extends StatelessWidget {
         builder: (context, snapshot) {
           Widget content;
           if (snapshot.hasData) {
-            content = MyApp();
+            content = MyApp(key: Key('app'),);
           } else {
             content = MaterialApp(
               key: Key('splash'),
@@ -137,7 +138,7 @@ class MyAppBuilder extends StatelessWidget {
             transitionBuilder: (Widget child, Animation<double> animation) {
               return FadeTransition(child: child, opacity: animation);
             },
-            duration: Duration(milliseconds: 2000),
+            duration: Duration(milliseconds: 500),
             child: content,
           );
         });
@@ -145,20 +146,14 @@ class MyAppBuilder extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({Key key}) : super(key: key);
+
   final UserController userController = Get.find();
   final AppController appController = Get.find();
 
   String get initialRoute {
-    if (userController.status.value == UserStatus.loggedin) {
-      return routes.account;
-    }
-
-    if (userController.user.value.email != null) {
-      return routes.login;
-    }
-
-    if (appController.onboardingSkipped.value) {
-      return routes.mechanics;
+    if (userController.status.value == UserStatus.loggedin || appController.onboardingSkipped.value) {
+      return routes.home;
     }
 
     return routes.onboarding;
@@ -209,6 +204,10 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: routes.account,
+          page: () => AccountPage()
+        ),
+        GetPage(
+          name: routes.profile,
           page: () => ProfilePage()
         ),
         GetPage(
