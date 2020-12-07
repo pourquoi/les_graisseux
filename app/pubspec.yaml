@@ -39,6 +39,8 @@ dependencies:
   image_picker: ^0.6.7+12
   package_info: ^0.4.3+2
   font_awesome_flutter: ^8.10.0
+  geolocator: ^6.1.7
+  eventsource: ^0.2.3
 
 dev_dependencies:
   flutter_test:

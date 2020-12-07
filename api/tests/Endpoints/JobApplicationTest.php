@@ -13,20 +13,26 @@ class JobApplicationTest extends Base
 {
     use RefreshDatabaseTrait;
 
-    public function testGetMyApplication(): void
+    public function test_application_listing_is_private(): void
     {
         $client = static::createClient();
+        $response = $client->request('GET', '/api/job_applications');
+        $this->assertResponseStatusCodeSame(401);
+
         $auth = self::login($client, 'bob@example.com', 'pass1234');
-
-        $response = $client->request('GET', '/api/users/' . $auth['uid']);
-        $user = $response->toArray();
-
-        $response = $client->request('GET', '/api/job_applications?mechanic=' . $user['mechanic']['id']);
-
+        $response = $client->request('GET', '/api/job_applications');
         $this->assertEquals(1, $response->toArray()['hydra:totalItems']);
+
+        $auth = self::login($client, 'alice@example.com', 'pass1234');
+        $response = $client->request('GET', '/api/job_applications');
+        $this->assertEquals(1, $response->toArray()['hydra:totalItems']);
+
+        $auth = self::login($client, 'roger@example.com', 'pass1234');
+        $response = $client->request('GET', '/api/job_applications');
+        $this->assertEquals(0, $response->toArray()['hydra:totalItems']);
     }
 
-    public function testApplyToJob(): void
+    public function test_apply_to_job(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -40,6 +46,7 @@ class JobApplicationTest extends Base
 
         $response = $client->request('GET', '/api/jobs');
         foreach($response->toArray()['hydra:member'] as $job) {
+            $this->assertArrayHasKey('application', $job);
             if ($job['application'] == null) {
                 break;
             }

@@ -18,7 +18,7 @@ class UserVoter extends Voter
 
     protected function supports($attribute, $subject): bool
     {
-        $supportsAttribute = in_array($attribute, ['EDIT_USER', 'DELETE_USER']);
+        $supportsAttribute = in_array($attribute, ['SUBSCRIBE', 'READ_PRIVATE', 'EDIT_USER', 'DELETE_USER']);
         $supportsSubject = $subject instanceof User;
 
         return $supportsAttribute && $supportsSubject;
@@ -35,7 +35,13 @@ class UserVoter extends Voter
         /** @var User $current_user */
         $current_user = $this->security->getUser();
 
+        if (!$current_user) return false;
+
         switch($attribute) {
+            case 'SUBSCRIBE':
+                return $current_user->getId() == $user->getId();
+
+            case 'READ_PRIVATE':
             case 'EDIT_USER':
             case 'DELETE_USER':
                 if ($current_user->isAdmin())

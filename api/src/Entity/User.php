@@ -7,12 +7,13 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-
-use App\Dto\User as UserDto;
+use App\Dto;
 
 /**
  * @ApiResource(
@@ -21,7 +22,7 @@ use App\Dto\User as UserDto;
  *     collectionOperations={
  *         "register"={
  *             "method"="POST",
- *             "input"=UserDto\Register::class
+ *             "input"=Dto\Input\Register::class
  *         },
  *         "get"={"method"="GET"}
  *     },
@@ -52,7 +53,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"_owner:user:read"})
+     * @Groups({"user:read"})
      */
     protected $email;
 
@@ -115,6 +116,18 @@ class User implements UserInterface
      * @Groups({"read", "write", "user:edit"})
      */
     protected $address;
+
+    /**
+     * @var UserVehicle[]|Collection
+     * @ORM\OneToMany(targetEntity="UserVehicle", mappedBy="user")
+     * @Groups({"customer:read"})
+     */
+    protected $vehicles;
+
+    public function __construct()
+    {
+        $this->vehicles = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -276,6 +289,28 @@ class User implements UserInterface
     public function setAvatar(?MediaObject $avatar): self
     {
         $this->avatar = $avatar;
+        return $this;
+    }
+
+    public function getVehicles(): Collection
+    {
+        return $this->vehicles;
+    }
+
+    public function addVehicle(UserVehicle $vehicle): self
+    {
+        if( !$this->vehicles->contains($vehicle) ) {
+            $this->vehicles->add($vehicle);
+            $vehicle->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeVehicle(UserVehicle $vehicle): self
+    {
+        if( $this->vehicles->contains($vehicle) ) {
+            $this->vehicles->remove($vehicle);
+        }
         return $this;
     }
 }

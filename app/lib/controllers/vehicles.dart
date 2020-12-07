@@ -1,27 +1,43 @@
+import 'package:app/models/vehicle_tree.dart';
+import 'package:app/services/crud.dart';
 import 'package:get/state_manager.dart';
 import 'package:app/services/endpoints/vehicle_tree.dart';
 
 class VehiclesController extends GetxController {
-  VehicleTreeService vehicleTreeService;
+  VehicleTreeService _crud;
 
   final items = [].obs;
-
   final loading = false.obs;
+  final params = VehicleTreeQueryParameters().obs;
+  final pagination = PaginatedQueryResponse().obs;
+  final tree = Map<String, List<VehicleTree>>().obs;
 
   void onInit() {
-    vehicleTreeService = Get.find<VehicleTreeService>();
-
-    search(level: VehicleTreeLevel.brand);
+    _crud = Get.find<VehicleTreeService>();
+    load();
   }
 
-  void search({String q, VehicleTreeLevel level}) {
+  Future load() async {
     loading.value = true;
-    vehicleTreeService.search(VehicleTreeQueryParameters(q: q, level: level.toString().split('.').last)).then((response) {
-      items.value = response.items;
+    try {
+      pagination.value = await _crud.search(params.value);
+      items.value = pagination.value.items;
+    } catch(err) {
+    } finally {
       loading.value = false;
-    }).catchError((error) {
-      loading.value = true;
-      throw error;
+    }
+  }
+
+  void buildTree() {
+    VehicleTreeLevel.entries.forEach((level) {
+      tree[level.key] = List<VehicleTree>();
+    });
+
+    items.forEach((item) {
+      if (!tree.containsKey(item.level)) {
+        tree[item.level] = List<VehicleTree>();
+      }
+      tree[item.level].add(item);
     });
   }
 }

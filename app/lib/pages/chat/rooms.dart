@@ -1,7 +1,9 @@
 import 'package:app/controllers/account/chat.dart';
 import 'package:app/controllers/user.dart';
-import 'package:app/widgets/ui/drawer.dart';
+import 'package:app/models/chat.dart';
+import 'package:app/widgets/chat/room_card.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:app/routes.dart' as routes;
 
@@ -15,7 +17,7 @@ class ChatRoomsPage extends StatefulWidget
 class _ChatRoomsPageState extends State<ChatRoomsPage>
 {
   void initState() {
-    super.initState();  
+    super.initState();
     widget.controller.loadRooms();
   }
 
@@ -28,30 +30,39 @@ class _ChatRoomsPageState extends State<ChatRoomsPage>
               floating: true,
               snap: false,
               pinned: true,
-              expandedHeight: 150.0,
-              flexibleSpace: FlexibleSpaceBar(
-                background: SafeArea(
+              //expandedHeight: 150.0,
+              actions: <Widget>[
+                OutlineButton(
+                  textColor: Colors.black,
+                  onPressed: () {
+                  },
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                    ]
+                      Obx(() => widget.controller.roomsParams.value.sort != null ?
+                        Text(('sorts.'+widget.controller.roomsParams.value.sort).tr) : 
+                        Text('sort_by'.tr)
+                      ),
+                      Icon(FontAwesomeIcons.caretDown)
+                    ],
                   )
-                ),
-                stretchModes: <StretchMode>[
-                  StretchMode.zoomBackground,
-                  StretchMode.blurBackground,
-                  StretchMode.fadeTitle,
-                ],
-                title: Text('Messages')
-              ),
+                )
+              ],
+              title: Text('pages.messages.title'.tr),
             ),
             Obx( () =>
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, idx) {
-                      if (idx < widget.controller.rooms.length)
-                        return buildRow(context, idx);
-                      else if (idx == widget.controller.rooms.length) {
+                      if (idx < widget.controller.rooms.length) {
+                        ChatRoom room = widget.controller.rooms[idx];
+                        return ChatRoomCard(
+                          room: room,
+                          user: widget.userController.user.value,
+                          onTap: () {
+                            Get.toNamed(routes.chat_room.replaceFirst(':chat', room.uuid));
+                          }
+                        );
+                      } else if (idx == widget.controller.rooms.length) {
                         if (widget.controller.roomsPagination.value.next != null) {
                           return CircularProgressIndicator();
                         } else {
@@ -66,36 +77,6 @@ class _ChatRoomsPageState extends State<ChatRoomsPage>
               ),
             )
         ]
-      )
-    );
-  }
-
-  Widget buildRow(BuildContext context, int idx) {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed(routes.chat_room.replaceFirst(':chat', widget.controller.rooms[idx].uuid));
-      },
-      child: Padding(
-        padding: EdgeInsets.all(40),
-        child: Column(
-          children: [
-            Text(widget.controller.rooms[idx].getInterlocutor(widget.userController.user.value.id).user.username),
-            Obx(() {
-              if (widget.controller.rooms[idx].application != null) {
-                return Text(widget.controller.rooms[idx].application.job.title);
-              } else {
-                return SizedBox.shrink();
-              }
-            }),
-            Obx(() {
-              if (widget.controller.rooms[idx].lastMessage != null) {
-                return Text(widget.controller.rooms[idx].lastMessage.message);
-              } else {
-                return SizedBox.shrink();
-              }
-            })
-          ]
-        )
       )
     );
   }

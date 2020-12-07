@@ -14,5 +14,6 @@ api_platform:
         jsonld:   ['application/ld+json']
         json:     ['application/json']
         csv:      ['text/csv']
+        graphql:  ['application/graphql']
         html:     ['text/html']
 

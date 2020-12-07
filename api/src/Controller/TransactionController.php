@@ -11,6 +11,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class TransactionController extends AbstractController
 {
     /**
+     * Proxy to the api email verification controller.
+     *
      * @Route("/_email_verification/{token}")
      * @param Request $request
      * @param EmailVerificationController $emailCtrl

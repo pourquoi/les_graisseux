@@ -39,75 +39,39 @@ class _StepMechanicServicesState extends State<StepMechanicServices> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        SizedBox(height: 32),
+        Spacer(),
 
-        Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
-        Spacer() : SizedBox.shrink()),
-
-        Obx(() => widget.mechanicController.mechanic.value.services.length > 0 ?
-          Expanded(child:Padding(
-            padding: EdgeInsets.only(left: 32, right: 0),
-            child: SingleChildScrollView(
-              child: MechanicServicesForm(controller: widget.mechanicController)
-            )
-          )) : 
+        Obx(() =>  widget.mechanicController.mechanic.value.services.length > 0 ?
+          ItemFader(
+            itemCount: 2,
+            itemIndex: 0,
+            key: keys[0],
+            child: MechanicServicesForm(controller: widget.mechanicController)
+          )
+          :
           SizedBox.shrink()
         ),
 
-        Padding(
-          padding: EdgeInsets.only(left: 32, right: 8),
-          child: 
-          Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ? 
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: RaisedButton(
-                    key: keys[0],
-                    onPressed: () async {
-                      widget.mechanicController.mechanic.value.services.add(MechanicSkill());
-                      widget.mechanicController.mechanic.refresh();
-                    },
-                    child: Text('Add a service')
-                  )
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton(
-                    onPressed: () => submit(),
-                    child: Text('skip')
-                  ),
-                )
-              ]
-            ) :
-            Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: RaisedButton(
-                    onPressed: () async {
-                      widget.mechanicController.mechanic.value.services.add(MechanicSkill());
-                      widget.mechanicController.mechanic.refresh();
-                    },
-                    child: Text('Add more')
-                  )
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: RaisedButton(
-                    color: Colors.greenAccent,
-                    onPressed: () => submit(),
-                    child: Text('Next')
-                  ),
-                )
-              ]
-            ),
-          )
+        OutlineButton(
+          key: keys[0],
+          onPressed: () async {
+            widget.mechanicController.mechanic.value.services.add(MechanicSkill());
+            widget.mechanicController.mechanic.refresh();
+          },
+          child: Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
+          Text('Pick a service') : Text('Add a service'))
         ),
 
-        Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
-        Spacer() : SizedBox.shrink()),
+        Spacer(),
 
+        Align(
+          alignment: Alignment.centerRight,
+          child: RaisedButton(
+            onPressed: () => submit(),
+            child: Obx(() => widget.mechanicController.mechanic.value.services.length == 0 ?
+              Text('Skip') : Icon(Icons.navigate_next_rounded))
+          ),
+        )
       ]
     );
   }

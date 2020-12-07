@@ -7,10 +7,18 @@
     description: <text()>
     __calls:
       - addTask: ['@service_clean_exterior']
+  jobsteve_{1..2}:
+    customer: '@customersteve'
+    address: '@steveaddress'
+    vehicle: '@stevevehicle'
+    title: <sentence()>
+    description: <text()>
+    __calls:
+      - addTask: ['@service_clean_exterior']
   job_{1..40}:
     customer: '@customer_*'
     address: '@useraddress_*'
-    vehicle: '@customervehicle_*'
+    vehicle: '@uservehicle_*'
     title: <sentence()>
     description: <text()>
     __calls:

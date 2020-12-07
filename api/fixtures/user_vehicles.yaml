@@ -1,0 +1,10 @@
+App\Entity\UserVehicle:
+  alicevehicle_{1..2}:
+    user: '@alice'
+    type: '@alfaromeo_159_1'
+  stevevehicle:
+    user: '@steve'
+    type: '@mercedes'
+  uservehicle_{1..10}:
+    user: '@user_*'
+    type: '@mercedes_classc'

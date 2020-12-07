@@ -45,5 +45,9 @@
     <string>Pick profile, car and garage pictures</string>
     <key>NSCameraUsageDescription</key>
     <string>Take profile, car and garage pictures</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to location when open.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to location when in the background.</string>
 </dict>
 </plist>

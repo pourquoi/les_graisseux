@@ -4,13 +4,12 @@ namespace App\Tests\Endpoints;
 
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\Client;
-use Hautelook\AliceBundle\PhpUnit\RefreshDatabaseTrait;
 
 abstract class Base extends ApiTestCase
 {
-    use RefreshDatabaseTrait;
+    const UPLOAD_DIR = __DIR__ . '/../../public/test/upload';
 
-    public static function login($client, $email, $password)
+    public static function login($client, $email, $password): array
     {
         if ($client instanceof Client) {
             $response = $client->request('POST', '/authentication_token', ['json' => [
@@ -39,5 +38,14 @@ abstract class Base extends ApiTestCase
         }
 
         throw new \InvalidArgumentException();
+    }
+
+    public static function logout($client): void
+    {
+        if ($client instanceof Client) {
+            $client->setDefaultOptions(['headers' => []]);
+        } else if ($client instanceof \Symfony\Bundle\FrameworkBundle\KernelBrowser) {
+            $client->setServerParameters([]);
+        }
     }
 }

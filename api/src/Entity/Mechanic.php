@@ -12,7 +12,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Filter\MechanicDistanceFilter;
-use App\Dto\User as UserDto;
+use App\Filter\MechanicOrderFilter;
+use App\Filter\MechanicVehicleFilter;
+use App\Dto;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ApiResource(
@@ -22,7 +25,7 @@ use App\Dto\User as UserDto;
  *         "get",
  *         "post"={
  *             "method"="POST",
- *             "input"=UserDto\MechanicProfile::class
+ *             "input"=Dto\Input\Mechanic::class
  *         }
  *     },
  *     itemOperations={
@@ -30,12 +33,14 @@ use App\Dto\User as UserDto;
  *         "put"={
  *             "method"="PUT",
  *             "security"="is_granted('ROLE_ADMIN') or object.getUser() == user",
- *             "input"=UserDto\MechanicProfile::class
+ *             "input"=Dto\Input\Mechanic::class
  *         }
  *     }
  * )
  * @ORM\Entity(repositoryClass=MechanicRepository::class)
- * @ApiFilter(MechanicDistanceFilter::class, properties={"user.address.geocoordinates"})
+ * @ApiFilter(MechanicDistanceFilter::class, properties={"distance"})
+ * @ApiFilter(MechanicVehicleFilter::class, properties={"vehicle"})
+ * @ApiFilter(MechanicOrderFilter::class, properties={"created_at": "DESC", "distance": "ASC"})
  */
 class Mechanic
 {
@@ -53,7 +58,7 @@ class Mechanic
     /**
      * @var string
      * @ORM\Column(type="text")
-     * @Groups({"read", "write"})
+     * @Groups({"mechanic:read", "write"})
      */
     protected $about;
 
@@ -73,13 +78,12 @@ class Mechanic
      * @ORM\Column(type="float", nullable=true)
      * @Groups({"read", "write"})
      */
-    protected $avg_rating;
+    protected $rating;
 
     /**
      * @var MechanicService[]|Collection
-     * @ORM\ManyToMany(targetEntity="MechanicService", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="MechanicService", cascade={"persist", "remove"}, orphanRemoval=true, mappedBy="mechanic")
      * @Groups({"mechanic:read", "mechanic:write"})
-     * @ApiSubresource()
      */
     protected $services;
 
@@ -89,6 +93,13 @@ class Mechanic
      * @Groups({"mechanic:read"})
      */
     protected $user;
+
+    /**
+     * @var int|null
+     * @Groups("read")
+     * @ApiProperty()
+     */
+    public $distance;
 
     public function __construct()
     {
@@ -124,14 +135,14 @@ class Mechanic
         return $this;
     }
 
-    public function getAvgRating(): ?float
+    public function getRating(): ?float
     {
-        return $this->avg_rating;
+        return $this->rating;
     }
 
-    public function setAvgRating(?float $avg_rating): self
+    public function setRating(?float $rating): self
     {
-        $this->avg_rating = $avg_rating;
+        $this->rating = $rating;
 
         return $this;
     }

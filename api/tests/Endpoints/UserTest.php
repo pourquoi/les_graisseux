@@ -17,7 +17,7 @@ class UserTest extends Base
 {
     use ReloadDatabaseTrait;
 
-    public function testGetCollection(): void
+    public function test_listing(): void
     {
         $response = static::createClient()->request('GET', '/api/users?username=bob');
 
@@ -27,27 +27,31 @@ class UserTest extends Base
 
         $user = json_decode($response->getContent(), true)['hydra:member'][0];
 
-        $this->assertArrayNotHasKey('email', $user);
+        $this->assertTrue($user['email'] == '');
     }
 
-    public function testUserContext(): void
+    /**
+     * @group mercure
+     */
+    public function test_user_properties(): void
     {
         $client = static::createClient();
         $response = $client->request('GET', '/api/users?username=bob');
-        $user = json_decode($response->getContent(), true)['hydra:member'][0];
-        $this->assertArrayNotHasKey('email', $user);
+        $data = $response->toArray()['hydra:member'][0];
+        $this->assertTrue($data['email'] == '');
 
-        $response = $client->request('GET', $user['@id']);
-        $user = json_decode($response->getContent(), true);
-        $this->assertArrayNotHasKey('email', $user);
+        $response = $client->request('GET', $data['@id']);
+        $data = $response->toArray();
+        $this->assertTrue($data['email'] == '');
 
         self::login($client, 'bob@example.com', 'pass1234');
-        $response = $client->request('GET', $user['@id']);
-        $user = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('email', $user);
+        $response = $client->request('GET', $data['@id']);
+        $data = $response->toArray();
+        $this->assertTrue($data['email'] != '');
+        $this->assertArrayHasKey('@subscription', $data);
     }
 
-    public function testLogin(): void
+    public function test_login(): void
     {
         $client = static::createClient();
 
@@ -73,9 +77,12 @@ class UserTest extends Base
             'password' => 'OOOOOOOOOOOOO'
         ]]);
         $this->assertEquals(401, $response->getStatusCode());
+
+        $response = $client->request('GET', '/api/users?username=bob', ['headers'=>['Authorization'=>'Bearer 000000']]);
+        $this->assertEquals(401, $response->getStatusCode());
     }
 
-    public function testEmailVerification(): void
+    public function test_email_verification(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -97,7 +104,7 @@ class UserTest extends Base
         $this->assertEquals(400, $response->getStatusCode());
     }
 
-    public function testCreate(): void
+    public function test_register(): void
     {
         $client = static::createClient();
         $client->enableProfiler();
@@ -123,13 +130,13 @@ class UserTest extends Base
             $this->assertEquals(1, $sent);
         }
 
-        $token = $container->get(TokenManager::class)->encode(['user_id' => $user['id']]);
+        $token = $container->get('lexik_jwt_authentication.encoder')->encode(['user_id' => $user['id']]);
 
         $response = $client->request('GET', '/_email_verification/' . $token, ['headers'=>['Accept' => 'text/html']]);
         $this->assertResponseIsSuccessful();
     }
 
-    public function testEdit(): void
+    public function test_edit(): void
     {
         $client = static::createClient();
         $data = static::login($client, 'alice@example.com', 'pass1234');

@@ -16,6 +16,14 @@ class LocaleSubscriber implements EventSubscriberInterface
         $this->defaultLocale = $defaultLocale;
     }
 
+    public static function getSubscribedEvents()
+    {
+        return [
+            // must be registered before (i.e. with a higher priority than) the default Locale listener
+            KernelEvents::REQUEST => [['onKernelRequest', 20]],
+        ];
+    }
+
     public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
@@ -23,20 +31,12 @@ class LocaleSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // try to see if the locale has been set as a _locale routing parameter
+        // check the locale has been set as a _locale routing parameter
         if ($locale = $request->attributes->get('_locale')) {
             $request->getSession()->set('_locale', $locale);
         } else {
             // if no explicit locale has been set on this request, use one from the session
             $request->setLocale($request->getSession()->get('_locale', $this->defaultLocale));
         }
-    }
-
-    public static function getSubscribedEvents()
-    {
-        return [
-            // must be registered before (i.e. with a higher priority than) the default Locale listener
-            KernelEvents::REQUEST => [['onKernelRequest', 20]],
-        ];
     }
 }

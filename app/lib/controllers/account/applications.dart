@@ -1,6 +1,6 @@
 import 'package:app/controllers/user.dart';
 import 'package:app/models/job_application.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 import 'package:app/services/endpoints/job.dart';
 import 'package:get/state_manager.dart';
 
@@ -11,37 +11,36 @@ class JobApplicationsController extends GetxController
   final params = JobApplicationQueryParameters().obs;
   final loading = false.obs;
 
-  JobApplicationService _api;
+  JobApplicationService _crud;
   UserController _userController;
 
   void onInit() {
-    _api = Get.put(JobApplicationService());
+    _crud = Get.put(JobApplicationService());
     _userController = Get.find<UserController>();
   }
 
-  Future<void> load() {
+  Future<void> load() async {
     params.value = JobApplicationQueryParameters(mechanic: _userController.user.value.mechanic.id);
-
     loading.value = true;
-    return _api.search(params.value).then((response) {
-      pagination.value = response;
+    try {
+      pagination.value = await _crud.search(params.value);
       items.value = pagination.value.items;
+    } catch(err) {
+    } finally {
       loading.value = false;
-    }).catchError((error) {
-      loading.value = true;
-    });
+    }
   }
 
-  Future<void> more() {
+  Future<void> more() async {
     if (pagination.value.next != null) {
       loading.value = true;
-      return _api.next(pagination.value).then((response) {
-        loading.value = false;
-        pagination.value = response;
-        items.addAll(response.items);
-      }).catchError((error) {
+      try {
+        pagination.value = await _crud.next(pagination.value);
+        items.addAll(pagination.value.items);
+      } catch(err) {
+      } finally {
         loading.value = true;
-      });
+      }
     }
   }
 }

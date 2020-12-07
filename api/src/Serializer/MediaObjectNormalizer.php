@@ -27,11 +27,14 @@ class MediaObjectNormalizer implements ContextAwareNormalizerInterface, Normaliz
 
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
-        if (isset($context[self::ALREADY_CALLED])) {
-            return false;
+        if ($data instanceof MediaObject) {
+            if (isset($context[self::ALREADY_CALLED]) && in_array($data->getId(), $context[self::ALREADY_CALLED])) {
+                return false;
+            }
+            return true;
         }
 
-        return $data instanceof MediaObject;
+        return false;
     }
 
     /**
@@ -43,7 +46,7 @@ class MediaObjectNormalizer implements ContextAwareNormalizerInterface, Normaliz
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        $context[self::ALREADY_CALLED] = true;
+        $context[self::ALREADY_CALLED][] = $object->getId();
 
         try {
             $object->contentUrl = $this->storage->resolveUri($object, 'file');

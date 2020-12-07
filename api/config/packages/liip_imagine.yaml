@@ -2,17 +2,29 @@
 liip_imagine:
     # valid drivers options include "gd" or "gmagick" or "imagick"
     driver: "gd"
+
     loaders:
-        system_loader:
+        upload_loader:
             flysystem:
                 filesystem_service: upload.storage
-    data_loader: system_loader
+        brand_loader:
+            flysystem:
+                filesystem_service: brand.storage
+
+    # default loader
+    data_loader: upload_loader
 
     resolvers:
         default:
             flysystem:
                 filesystem_service: upload.storage
                 root_url:           '%env(SCHEME)%://%env(HOST)%/upload'
+                cache_prefix:       cache
+                visibility:         public
+        brand:
+            flysystem:
+                filesystem_service: brand.storage
+                root_url:           '%env(SCHEME)%://%env(HOST)%/media/brand'
                 cache_prefix:       cache
                 visibility:         public
 
@@ -23,3 +35,8 @@ liip_imagine:
             filters:
                 auto_rotate: ~
                 thumbnail: { size: [100, 100], mode: outbound }
+        brand_thumb:
+            data_loader: brand_loader
+            quality: 75
+            filters:
+                relative_resize: { heighten: 100 }

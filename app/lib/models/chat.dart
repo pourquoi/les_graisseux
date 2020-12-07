@@ -1,4 +1,5 @@
 import 'package:app/models/common.dart';
+import 'package:app/models/job.dart';
 import 'package:app/models/job_application.dart';
 import 'package:app/models/user.dart';
 import 'package:intl/intl.dart';
@@ -9,9 +10,11 @@ class ChatRoom extends HydraResource
   int id;
   String uuid;
   DateTime createdAt;
+  String title;
   List<ChatUser> users = List<ChatUser>();
   JobApplication application;
   ChatMessage lastMessage;
+  Job job;
 
   ChatRoom({this.id, this.uuid, this.users}) {
     if (uuid == null) uuid = Uuid().v4();
@@ -40,6 +43,7 @@ class ChatRoom extends HydraResource
 
     id = json['id'];
     uuid = json['uuid'];
+    title = json['title'];
     createdAt = DateTime.parse(json['created_at']);
 
     if (json.containsKey('users') && json['users'] != null) {
@@ -66,6 +70,16 @@ class ChatRoom extends HydraResource
             : null;
       } else {
         application = JobApplication.fromJson(json['application'], context: context);
+      }
+    }
+
+    if (json.containsKey('job') && json['job'] != null) {
+      if (json['job'] is String) {
+        application = context[CTX_MAP_BY_IDS].containsKey(json['application'])
+            ? context[CTX_MAP_BY_IDS][json['application']]
+            : null;
+      } else {
+        job = Job.fromJson(json['job'], context: context);
       }
     }
 

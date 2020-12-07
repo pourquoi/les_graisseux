@@ -7,9 +7,11 @@ use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\DenormalizedIdentifiersAwareItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
+use App\Entity\ChatRoom;
 use App\Entity\Job;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\Security\Core\Security;
 
 class JobDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface, DenormalizedIdentifiersAwareItemDataProviderInterface
@@ -29,12 +31,75 @@ class JobDataProvider implements ContextAwareCollectionDataProviderInterface, Re
 
     public function getCollection(string $resourceClass, string $operationName = null, array $context = [])
     {
-        /** @var \ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator $items */
-        $items = $this->collectionDataProvider->getCollection($resourceClass, $operationName, $context);
-        $current_user = $this->security->getUser();
+        $qb = $this->em->createQueryBuilder()->select('job')
+            ->from(Job::class, 'job')
+            ->innerJoin('job.address', 'addr')
+            ->innerJoin('job.customer', 'customer')
+            ->innerJoin('customer.user', 'user')
+            ->leftJoin('job.vehicle', 'vehicle')
+            ->leftJoin('vehicle.type', 'v1')
+            ->leftJoin('v1.parent', 'v2')
+            ->leftJoin('v2.parent', 'v3')
+            ->leftJoin('v3.parent', 'v4')
+        ;
+
+        if (isset($context['filters']['distance'])) {
+            [$lat, $lng, $radius] = explode(',', $context['filters']['distance']);
+
+            $qb->addSelect(
+                '(
+                  6371 * acos(
+                    cos(radians(:lat)) * cos(radians(y(addr.coordinates))) * cos(radians(x(addr.coordinates)) - radians(:lng))
+                    +
+                    sin(radians(:lat)) * sin(radians(y(addr.coordinates)))
+                  )
+                ) AS distance'
+            )
+                ->setParameter('lat', $lat)
+                ->setParameter('lng', $lng)
+                ->having('distance <= :radius')
+                ->setParameter('radius', $radius);
+        }
+
+        if (isset($context['filters']['customer.user'])) {
+            $qb->andWhere('user.id = :user')->setParameter('user', $context['filters']['customer.user']);
+        }
+
+        if (isset($context['filters']['vehicle'])) {
+            $types = explode(',', $context['filters']['vehicle']);
+            $qb
+                ->andWhere('((v1.id IS NOT NULL AND v1.id IN (:types)) OR (v2.id IS NOT NULL AND v2.id IN (:types)) OR (v3.id IS NOT NULL AND v3.id IN (:types)) OR (v4.id IS NOT NULL AND v4.id IN (:types)))')
+                ->setParameter('types', $types)
+            ;
+        }
+
+        if (isset($context['filters']['sort'])) {
+            foreach($context['filters']['sort'] as $sort=>$order) {
+                switch($sort) {
+                    case 'distance':
+                        $qb->orderBy('distance', 'ASC');
+                        break;
+                    case 'new':
+                        $qb->orderBy('job.created_at', 'DESC');
+                        break;
+                    case 'hot':
+                        $qb->orderBy('job.created_at', 'ASC');
+                        break;
+                }
+            }
+        }
+
+        $page = 1;
+        if (isset($context['filters']['page'])) $page = (int)$context['filters']['page'];
+
+        $query = $qb->getQuery()
+            ->setFirstResult(($page-1) * 30)
+            ->setMaxResults(30);
+
+        $paginator = new Paginator($query, true);
 
         /** @var Job $job */
-        foreach($items as $k=>$item) {
+        foreach($paginator as $k=>$item) {
             if (is_array($item)) {
                 $job = $item[0];
                 if (isset($item['distance'])) {
@@ -47,7 +112,7 @@ class JobDataProvider implements ContextAwareCollectionDataProviderInterface, Re
             $this->fillContext($job);
         }
 
-        return $items;
+        return new \ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator($paginator);
     }
 
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = [])

@@ -1,8 +1,10 @@
 import 'package:app/models/address.dart';
+import 'package:app/models/chat.dart';
 import 'package:app/models/common.dart';
 import 'package:app/models/customer.dart';
-import 'package:app/models/customer_vehicle.dart';
+import 'package:app/models/user_vehicle.dart';
 import 'package:app/models/job_application.dart';
+import 'package:app/models/media.dart';
 import 'package:app/models/service_tree.dart';
 
 class Job extends HydraResource {
@@ -12,13 +14,19 @@ class Job extends HydraResource {
 
   Customer customer;
   List<ServiceTree> tasks = List<ServiceTree>();
-  CustomerVehicle vehicle;
+  UserVehicle vehicle;
 
   Address address;
 
   JobApplication application;
 
+  List<Media> pictures = List<Media>();
+
+  ChatRoom chat;
+
   bool mine;
+
+  int distance;
 
   Job({this.id, this.customer, this.vehicle});
 
@@ -44,6 +52,7 @@ class Job extends HydraResource {
     title = json['title'];
     description = json['description'];
     mine = json['mine'];
+    distance = json['distance'];
 
     context[CTX_MAP_BY_IDS][json['@id']] = this;
 
@@ -63,7 +72,7 @@ class Job extends HydraResource {
             ? context[CTX_MAP_BY_IDS][json['vehicle']]
             : null;
       } else {
-        vehicle = CustomerVehicle.fromJson(json['vehicle'], context: context);
+        vehicle = UserVehicle.fromJson(json['vehicle'], context: context);
       }
     }
 
@@ -74,6 +83,16 @@ class Job extends HydraResource {
             : null;
       } else {
         application = JobApplication.fromJson(json['application'], context: context);
+      }
+    }
+
+    if (json.containsKey('chat') && json['chat'] != null) {
+      if (json['chat'] is String) {
+        application = context[CTX_MAP_BY_IDS].containsKey(json['chat'])
+            ? context[CTX_MAP_BY_IDS][json['chat']]
+            : null;
+      } else {
+        chat = ChatRoom.fromJson(json['chat'], context: context);
       }
     }
 
@@ -94,6 +113,23 @@ class Job extends HydraResource {
           .cast<ServiceTree>();
     }
 
+    if (json.containsKey('pictures') && json['pictures'] != null) {
+      pictures = json['pictures']
+          .toList()
+          .map((v) {
+            if (v is String) {
+              return context[CTX_MAP_BY_IDS].containsKey(v)
+                  ? context[CTX_MAP_BY_IDS][v]
+                  : null;
+            } else {
+              return Media.fromJson(v, context: context);
+            }
+          })
+          .where((v) => v != null)
+          .toList()
+          .cast<Media>();
+    }
+
     if (json.containsKey('address') && json['address'] != null) {
       address = Address.fromJson(json['address'], context: context);
     }
@@ -107,7 +143,8 @@ class Job extends HydraResource {
       'title': title,
       'description': description,
       'tasks': tasks.map((task) => task.hydraId).toList(),
-      'address': address == null ? null : address.toJson(context: context)
+      'address': address == null ? null : address.toJson(context: context),
+      'pictures': pictures.map((picture) => picture.hydraId).toList()
     };
 
     if (customer != null) {

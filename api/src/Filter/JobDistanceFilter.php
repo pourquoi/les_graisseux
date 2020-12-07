@@ -4,6 +4,10 @@ namespace App\Filter;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 
 final class JobDistanceFilter extends AbstractDistanceFilter
 {

@@ -1,0 +1,3 @@
+services:
+  #App\Tests\Functional\Fixtures\PublisherStub:
+  #  decorates: mercure.hub.default.publisher

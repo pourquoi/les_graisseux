@@ -3,6 +3,7 @@ const CTX_MAP_BY_IDS = 'mapByIds';
 class HydraResource {
   String hydraId;
   String hydraType;
+  String subscriptionToken;
 
   HydraResource();
 
@@ -15,6 +16,7 @@ class HydraResource {
   void parseJson(Map<String, dynamic> json, {Map<String, dynamic> context}) {
     hydraId = json['@id'];
     hydraType = json['@type'];
+    subscriptionToken = json['@subscription'];
   }
 
   Map<String, dynamic> toJson({Map<String, dynamic> context}) {

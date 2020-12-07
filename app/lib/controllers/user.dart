@@ -1,33 +1,71 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:app/config.dart';
+import 'package:app/controllers/app.dart';
+import 'package:app/models/address.dart';
 import 'package:app/models/media.dart';
 import 'package:app/services/api.dart';
 import 'package:app/services/endpoints/user.dart';
-import 'package:get/state_manager.dart';
+import 'package:app/utils/feedback.dart';
+import 'package:dio/dio.dart';
+import 'package:eventsource/eventsource.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:meta/meta.dart';
 import 'package:app/models/user.dart';
 import 'package:get_storage/get_storage.dart';
 
-enum UserStatus { anonymous, loggedin, loggedout }
+import 'package:app/routes.dart' as routes;
 
 class UserController extends GetxController {
-  ApiService api;
-  UserService userService;
+  AppController _appController;
+  ApiService _api;
+  UserService _crud;
 
   final token = ''.obs;
   final user = User().obs;
   final loading = false.obs;
-  final status = UserStatus.anonymous.obs;
+  final loggedIn = false.obs;
+
+  StreamSubscription _errorSub;
+  StreamSubscription _tokenSub;
+  StreamSubscription userSubscription;
 
   void onInit() {
+    _api = Get.find<ApiService>();
+    _crud = Get.find<UserService>();
+    _appController = Get.find<AppController>();
+
+    _tokenSub = token.listen((t) { 
+      _api.token = t;
+      if (t == null) {
+        loggedIn.value = false;
+      }
+    });
+
+    _errorSub = _api.errorStream.listen((DioError error) {
+      if (error.response != null && error.response.statusCode == 401) {
+        token.nil();
+        if (!error.request.uri.path.endsWith('authentication_token')) {
+          Get.toNamed(routes.login);
+        }
+      }
+    });
+  }
+
+  void onClose() {
+    _errorSub.cancel();
+    _tokenSub.cancel();
+    if (userSubscription != null)
+      userSubscription.cancel();
   }
 
   Future bootstrap() async {
-    api = Get.find<ApiService>();
-    userService = Get.find<UserService>();
-    api.token = token;
-    await loadFromStorage();
+    await _read();
   }
 
-  Future loadFromStorage() async {
+  Future _read() async {
     GetStorage box = GetStorage();
     String storedToken = box.read("token");
     int storedUserId = box.read("user.id");
@@ -45,7 +83,7 @@ class UserController extends GetxController {
     }
   }
 
-  Future saveToStorage() async {
+  Future _store() async {
     GetStorage box = GetStorage();
     box.write("token", token.value);
     box.write("user.id", user.value.id);
@@ -53,83 +91,123 @@ class UserController extends GetxController {
     box.write("user.username", user.value.username);
   }
 
+  Future subscribeRoom() async {
+    if (userSubscription != null) {
+      userSubscription.cancel();
+    }
+    userSubscription = null;
+
+    if (user.value.subscriptionToken != null) {
+      
+      EventSource eventSource = await EventSource.connect(
+        MERCURE_ENDPOINT + '?topic=' + Uri.encodeComponent('http://example.com' + user.value.hydraId),
+        headers: {'Authorization': 'Bearer ' + user.value.subscriptionToken}
+      );
+
+      userSubscription = eventSource.listen((Event event) {
+        Map eventData = jsonDecode(event.data);
+        print(eventData);
+        if (eventData != null && eventData["type"] == "new-message") {
+          
+        }
+      });
+    }
+  }
+
   Future login({@required String email, @required String password}) async {
     loading.value = true;
-    return api.post('/authentication_token',
-        data: {'email': email, 'password': password}).then((data) {
+    token.nil();
+    try {
+      Map<String, dynamic> data = await _api.post('/authentication_token', data: {'email': email, 'password': password});
       token.value = data['token'];
-      api.token = token;
       user.value.id = data['uid'];
-      return refresh();
-    }).catchError((error) {
-      token.nil();
-      status.value = UserStatus.anonymous;
-      loading.value = false;
-      throw error;
-    });
+    } catch(err) {
+      displayError(message: "Invalid email or password");
+    }
+
+    if (!token.isNull) {
+      try {
+        await refresh();
+        Get.toNamed(routes.home);
+      } catch(err) {}
+    }
+
+    if (user.value.mechanic != null) {
+      _appController.profileType.value = ProfileType.Mechanic;
+    } else {
+      _appController.profileType.value = ProfileType.Customer;
+    }
+
+    loading.value = false;
   }
 
   Future logout() async {
     token.nil();
-    status.value = UserStatus.loggedout;
     user.value = User(email: user.value.email, username: user.value.username);
-    saveToStorage();
+    _store();
   }
 
   Future register({@required String email, @required String password}) async {
     token.nil();
     loading.value = true;
-    return api.post('/api/users',
-        data: {'email': email, 'password': password}).then((data) {
-      user.value = User.fromJson(data);
-      saveToStorage();
+    try {
+      user.value = await _crud.register(email: email, password: password);
+      _store();
       return login(email: email, password: password);
-    }).catchError((error) {
+    } catch(err) {
+    } finally {
       loading.value = false;
-      status.value = UserStatus.anonymous;
-      throw error;
-    });
+    }
   }
 
   Future refresh() async {
     loading.value = true;
-    return api.get('/api/users/${user.value.id}').then((data) {
-      user.value = User.fromJson(data);
-      status.value = UserStatus.loggedin;
+    try {
+      User u = await _crud.get(user.value.id);
+      user.value = u;
+      loggedIn.value = true;
+      _store();
+      subscribeRoom();
+    } catch(err) {
+    } finally {
       loading.value = false;
-      saveToStorage();
-    }).catchError((error) {
-      token.nil();
-      status.value = UserStatus.loggedout;
-      loading.value = false;
-      throw error;
-    });
+    }
   }
 
   Future editUsername(String username) async {
     loading.value = true;
-    return userService.patch(user.value.id, {'username': username}).then((data) {
+    try {
+      _crud.patch(user.value.id, {'username': username});
       user.value.username = username;
       user.refresh();
+      _store();
+    } catch(err) {
+    } finally {
       loading.value = false;
-      saveToStorage();
-      return user;
-    }).catchError((error) {
-      loading.value = false;
-      throw error;
-    });
+    }
   }
 
   Future editAvatar(Media media) async {
     loading.value = true;
-    return userService.patch(user.value.id, {'avatar': media.hydraId}).then((data) {
+    try {
+      await _crud.patch(user.value.id, {'avatar': media.hydraId});
       user.value.avatar = media;
       user.refresh();
+    } catch(err) {
+    } finally {
       loading.value = false;
-      return user;
-    }).catchError((error) {
+    }
+  }
+
+  Future editAddress(Address address) async {
+    loading.value = true;
+    try {
+      User u = await _crud.patch(user.value.id, {'address': address.toJson()});
+      user.value.address = u.address;
+      user.refresh();
+    } catch(err) {
+    } finally {
       loading.value = false;
-      throw error;
-    });
+    }
   }
 }

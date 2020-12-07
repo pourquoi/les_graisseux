@@ -3,6 +3,7 @@
 namespace App\Tests\Endpoints;
 
 use App\Entity\Job;
+use App\Entity\MediaObject;
 use App\Entity\ServiceTree;
 use App\Entity\User;
 use App\Entity\VehicleTree;
@@ -13,7 +14,10 @@ class JobTest extends Base
 {
     use RefreshDatabaseTrait;
 
-    public function testGetCollection(): void
+    /**
+     * @group geocoding
+     */
+    public function test_listing(): void
     {
         $response = static::createClient()->request('GET', '/api/jobs?page=1');
         $this->assertResponseIsSuccessful();
@@ -22,13 +26,24 @@ class JobTest extends Base
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains(['hydra:totalItems' => 0]);
 
-        $response = static::createClient()->request('GET', '/api/jobs?distance=48.8673,2.425216,1000');
+        $response = static::createClient()->request('GET', '/api/jobs?distance=48.8673,2.425216,10');
         $this->assertResponseIsSuccessful();
         $data = $response->toArray();
         $this->assertGreaterThan(0, $data['hydra:totalItems']);
+
+        $response = static::createClient()->request('GET', '/api/jobs?distance=48.8673,2.425216,2000&order[distance]');
+        $this->assertResponseIsSuccessful();
+        $data = $response->toArray();
+        $this->assertGreaterThan(0, $data['hydra:totalItems']);
+
+        $container = self::$kernel->getContainer();
+        $brand = $container->get('doctrine')->getRepository(VehicleTree::class)->findOneBy(['level'=>VehicleTree::LEVEL_BRAND, 'name'=>'Alfa Romeo']);
+
+        $response = static::createClient()->request('GET', '/api/jobs?vehicle='.$brand->getId());
+        $this->assertResponseIsSuccessful();
     }
 
-    public function testUserContext(): void
+    public function test_job_properties(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -37,7 +52,11 @@ class JobTest extends Base
         $response = $client->request('GET', '/api/jobs?customer.user=' . $alice->getId());
         $this->assertResponseIsSuccessful();
         $data = $response->toArray();
+
         foreach($data['hydra:member'] as $job) {
+            $this->assertArrayHasKey('mine', $job);
+            $this->assertFalse($job['mine']);
+            $this->assertArrayHasKey('application', $job);
             $this->assertNull($job['application']);
         }
 
@@ -60,7 +79,7 @@ class JobTest extends Base
         $this->assertIsArray($job['application']);
     }
 
-    public function testCreate(): void
+    public function test_create_job(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -76,12 +95,14 @@ class JobTest extends Base
         $response = $client->request('GET', '/api/users/' . $data['uid']);
         $user = $response->toArray();
 
-        $response = $client->request('POST', '/api/customer_vehicles', ['json'=>[
-            'customer' => $user['customer']['@id'],
+        $response = $client->request('POST', '/api/user_vehicles', ['json'=>[
+            'user' => $user['@id'],
             'type' => '/api/vehicles/' . $vehicle->getId()
         ]]);
 
         $customer_vehicle = $response->toArray();
+
+        $picture = $container->get('doctrine')->getRepository(MediaObject::class)->findAll()[0];
 
         $response = $client->request('POST', '/api/jobs', ['json'=>[
             'title' => 'job title',
@@ -92,6 +113,9 @@ class JobTest extends Base
                 'locality' => 'Montreuil',
                 'postal_code' => 93100,
                 'geocoordinates' => [0, 0]
+            ],
+            'pictures' => [
+                '/api/media_objects/' . $picture->getId()
             ]
         ]]);
 

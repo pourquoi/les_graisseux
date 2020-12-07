@@ -11,7 +11,7 @@ doctrine:
             point:      CrEOF\Spatial\DBAL\Types\Geometry\PointType
             polygon:    CrEOF\Spatial\DBAL\Types\Geometry\PolygonType
             linestring: CrEOF\Spatial\DBAL\Types\Geometry\LineStringType
-            uuid:       Ramsey\Uuid\Doctrine\UuidType
+            #uuid:       Ramsey\Uuid\Doctrine\UuidType
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware

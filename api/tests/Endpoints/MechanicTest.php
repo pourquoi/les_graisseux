@@ -12,7 +12,10 @@ class MechanicTest extends Base
 {
     use RefreshDatabaseTrait;
 
-    public function testGetCollection(): void
+    /**
+     * @group collection
+     */
+    public function test_listing(): void
     {
         $response = static::createClient()->request('GET', '/api/mechanics?page=1');
         $this->assertResponseIsSuccessful();
@@ -29,9 +32,18 @@ class MechanicTest extends Base
         $mechanic = $json['hydra:member'][0];
 
         $this->assertArrayHasKey('user', $mechanic);
+
+        $container = self::$kernel->getContainer();
+        $brand = $container->get('doctrine')->getRepository(VehicleTree::class)->findOneBy(['level'=>VehicleTree::LEVEL_BRAND, 'name'=>'Mercedes']);
+
+        $response = static::createClient()->request('GET', '/api/mechanics?vehicle='.$brand->getId());
+        $this->assertResponseIsSuccessful();
     }
 
-    public function testCreate(): void
+    /**
+     * @group create
+     */
+    public function test_create_sequential(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();
@@ -63,7 +75,7 @@ class MechanicTest extends Base
         $this->assertResponseIsSuccessful();
     }
 
-    public function testCreateFull(): void
+    public function test_create_full(): void
     {
         $client = static::createClient();
         $container = self::$kernel->getContainer();

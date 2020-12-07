@@ -2,6 +2,7 @@
 import 'package:app/controllers/onboarding.dart';
 import 'package:app/pages/onboarding/common.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class StepUsername extends StatefulWidget {
@@ -47,44 +48,36 @@ class _StepUsernameState extends State<StepUsername> {
       key: _formKey,
       child: Column(
         children: [
-          SizedBox(height: 32),
           Spacer(),
-          Padding(
-            padding: EdgeInsets.only(left: 64, right: 32),
-            child: ItemFader(
-              itemCount: 1,
-              itemIndex: 0,
-              key: keys[0],
-              child: TextFormField(
-                controller: _usernameController,
-                style: TextStyle(color: Colors.orange),
-                decoration: InputDecoration(
-                  icon: Icon(Icons.lock, color: Colors.orange,), 
-                  labelStyle: TextStyle(color: Colors.orange),
-                  labelText: 'Username', 
-                  hintText: 'username'
-                ),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'input.required';
-                  }
-                  return null;
-                },
+          ItemFader(
+            itemCount: 1,
+            itemIndex: 0,
+            key: keys[0],
+            child: TextFormField(
+              controller: _usernameController,
+              style: TextStyle(color: Colors.orange),
+              decoration: InputDecoration(
+                icon: Icon(FontAwesomeIcons.user), 
+                labelText: 'Username', 
+                hintText: 'username'
               ),
-            )
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'input.required';
+                }
+                return null;
+              },
+            ),
           ),
           SizedBox(height: 24,),
-          Padding(
-            padding: EdgeInsets.only(left: 64, right: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Obx(() => RaisedButton(
-                  onPressed: () => widget.controller.loading.value ? null : submit(),
-                  child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
-                )),
-              ]
-            )
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Obx(() => RaisedButton(
+                onPressed: () => widget.controller.loading.value ? null : submit(),
+                child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+              )),
+            ]
           ),
           Spacer(),
         ]

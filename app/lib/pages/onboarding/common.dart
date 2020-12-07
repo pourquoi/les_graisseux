@@ -2,37 +2,6 @@
 
 import 'package:flutter/material.dart';
 
-class StepWidget extends StatefulWidget
-{
-  final Widget child;
-  final int itemCount;
-  StepWidget({@required this.child, @required this.itemCount, Key key}) : super(key: key);
-
-  SteWidgetState createState() => SteWidgetState();
-}
-
-class SteWidgetState extends State<StepWidget>
-{
-  List<GlobalKey<ItemFaderState>> keys;
-
-  void initState() {
-    super.initState();
-    keys = List.generate(widget.itemCount, (_) => GlobalKey<ItemFaderState>());
-  }
-
-  Widget build(BuildContext context)
-  {
-    return Column(
-      children: [
-        SizedBox(height: 32),
-        Spacer(),
-        widget.child,
-        Spacer()
-      ]
-    );
-  }
-}
-
 class ItemFader extends StatefulWidget {
   final Widget child;
   final int itemIndex;
@@ -46,17 +15,19 @@ class ItemFader extends StatefulWidget {
 
 class ItemFaderState extends State<ItemFader>
     with SingleTickerProviderStateMixin {
-  //1 means its below, -1 means its above
+  // 1 means its below, -1 means its above
   int position = 1;
   AnimationController _animationController;
   Animation _animation;
+  final _animationDelay = 200;
+  final _animationDuration = 400;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: _animationDuration),
     );
     _animation = CurvedAnimation(
       parent: _animationController,
@@ -67,15 +38,17 @@ class ItemFaderState extends State<ItemFader>
   }
 
   Future<void> show() async {
-    await Future.delayed(Duration(milliseconds: widget.itemIndex*40));
+    await Future.delayed(Duration(milliseconds: widget.itemIndex*_animationDelay));
     setState(() => position = 1);
     _animationController.forward();
   }
 
   Future<void> hide() async {
-    await Future.delayed(Duration(milliseconds: (widget.itemCount - widget.itemIndex)*40));
+    await Future.delayed(Duration(milliseconds: (widget.itemCount - widget.itemIndex)*_animationDelay));
     setState(() => position = -1);
     _animationController.reverse();
+    if (widget.itemCount -1 == widget.itemIndex)
+    await Future.delayed(Duration(milliseconds: (widget.itemCount - widget.itemIndex)*(_animationDelay/2).round()));
   }
 
   @override
@@ -90,7 +63,7 @@ class ItemFaderState extends State<ItemFader>
       animation: _animation,
       builder: (context, child) {
         return Transform.translate(
-          offset: Offset(0, 64 * position * (1 - _animation.value)),
+          offset: Offset(0, 128 * position * (1 - _animation.value)),
           child: Opacity(
             opacity: _animation.value,
             child: child,

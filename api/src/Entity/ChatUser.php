@@ -46,6 +46,13 @@ class ChatUser
     protected $user;
 
     /**
+     * @var \DateTime|null
+     * @ORM\Column(nullable=true, type="datetime")
+     * @Groups("read")
+     */
+    protected $readAt;
+
+    /**
      * @var ChatRoom
      * @ORM\ManyToOne(targetEntity="ChatRoom", inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
@@ -79,5 +86,15 @@ class ChatUser
         return $this;
     }
 
+    public function getReadAt(): ?\DateTime
+    {
+        return $this->readAt;
+    }
+
+    public function setReadAt(?\DateTime $readAt): self
+    {
+        $this->readAt = $readAt;
+        return $this;
+    }
 
 }

@@ -48,62 +48,48 @@ class _StepAccountState extends State<StepAccount> {
     return Form(
         key: _formKey,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, 
-          crossAxisAlignment: CrossAxisAlignment.start, 
           children: <Widget>[
-            SizedBox(height: 32),
             Spacer(),
-            Padding(
-              padding: EdgeInsets.only(left: 64, right: 8),
-              child: ItemFader(
-                key: keys[0],
-                itemCount: 2,
-                itemIndex: 0,
-                child: TextFormField(
-                  controller: _emailController, 
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.email, color: Colors.orange,), 
-                    labelText: 'Email', 
-                    labelStyle: TextStyle(color: Colors.orange),
-                    hintText: 'email'
-                  ), 
-                  keyboardType: TextInputType.emailAddress
-                )
-              ),
+            ItemFader(
+              key: keys[0],
+              itemCount: 2,
+              itemIndex: 0,
+              child: TextFormField(
+                controller: _emailController, 
+                //style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  icon: Icon(Icons.email), 
+                  labelText: 'Email', 
+                  hintText: 'email'
+                ), 
+                keyboardType: TextInputType.emailAddress
+              )
             ),
-            Padding(
-              padding: EdgeInsets.only(left: 64, right: 8),
-              child: ItemFader(
-                key: keys[1],
-                itemCount: 2,
-                itemIndex: 0,
-                child: TextFormField(
-                  controller: _passwordController,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    icon: Icon(Icons.lock, color: Colors.orange,),
-                    labelStyle: TextStyle(color: Colors.orange), 
-                    labelText: 'Password', 
-                    hintText: 'password'
-                  ),
-                  obscureText: true,
-                  keyboardType: TextInputType.visiblePassword,
-                )
-              ),
+            ItemFader(
+              key: keys[1],
+              itemCount: 2,
+              itemIndex: 1,
+              child: TextFormField(
+                controller: _passwordController,
+                //style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  icon: Icon(Icons.lock),
+                  labelText: 'Password', 
+                  hintText: 'password'
+                ),
+                obscureText: true,
+                keyboardType: TextInputType.visiblePassword,
+              )
             ),
             SizedBox(height: 24,),
-            Padding(
-              padding: EdgeInsets.only(left: 64, right: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Obx(() => RaisedButton(
-                    onPressed: () => widget.controller.loading.value ? null : submit(),
-                    child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
-                  )),
-                ]
-              )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Obx(() => RaisedButton(
+                  onPressed: () => widget.controller.loading.value ? null : submit(),
+                  child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+                )),
+              ]
             ),
             Spacer(),
         ]));

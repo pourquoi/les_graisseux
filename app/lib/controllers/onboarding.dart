@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 
 import 'package:app/models/user.dart';
 import 'package:app/models/address.dart';
-import 'package:app/models/customer_vehicle.dart';
+import 'package:app/models/user_vehicle.dart';
 import 'package:app/models/job.dart';
 import 'package:app/models/vehicle_tree.dart';
 import 'package:app/models/service_tree.dart';
@@ -18,6 +18,7 @@ enum OnboardingStep {
   Username,
   JobServices, 
   JobVehicle, 
+  JobPicture,
   MechanicServices, 
   Address, 
   Description, 
@@ -41,6 +42,8 @@ class OnboardingProfile with OnboardingStepController {
 
   bool get disabled => initialProfile == ProfileType.Mechanic || initialProfile == ProfileType.Customer;
   
+  String get title => 'Profile'.tr;
+
   OnboardingStep next() {
     return OnboardingStep.Account;
   }
@@ -59,9 +62,9 @@ class OnboardingAccount with OnboardingStepController {
 
   OnboardingAccount(this._controller);
 
-  bool get disabled {
-    return _controller.userController.status.value == UserStatus.loggedin;
-  }
+  bool get disabled => _controller.userController.loggedIn.value;
+
+  String get title => 'Account'.tr;
 
   OnboardingStep next() {
     return OnboardingStep.Username;
@@ -94,6 +97,8 @@ class OnboardingUsername with OnboardingStepController {
     return _controller.userController.user.value.username != null && _controller.userController.user.value.username != '';
   }
 
+  String get title => 'Username'.tr;
+
   OnboardingStep next() {
     if (_controller.profileType.value == ProfileType.Customer) {
       return OnboardingStep.JobServices;
@@ -122,7 +127,7 @@ class OnboardingJobServices with OnboardingStepController {
   }
 
   OnboardingStep prev() {
-    if (_controller.userController.status.value == UserStatus.loggedin) {
+    if (_controller.userController.loggedIn.value) {
       return null;
     } else {
       return OnboardingStep.Username;
@@ -145,8 +150,10 @@ class OnboardingJobVehicle with OnboardingStepController {
 
   OnboardingJobVehicle(this._controller);
 
+  String get title => 'onboarding.job_vehicle.title'.tr;
+
   OnboardingStep next() {
-    return OnboardingStep.Address;
+    return OnboardingStep.JobPicture;
   }
 
   OnboardingStep prev() {
@@ -159,14 +166,29 @@ class OnboardingJobVehicle with OnboardingStepController {
       job.vehicle = null;
     } else {
       if (job.vehicle == null) {
-        job.vehicle = new CustomerVehicle(customer: job.customer, type: vehicle);
-        job.vehicle.type = vehicle;
+        job.vehicle = new UserVehicle();
       }
 
       job.vehicle.type = vehicle;
-      job.vehicle.customer = _controller.userController.user.value.customer;
+      job.vehicle.user = _controller.userController.user.value;
     }
     _controller.jobController.job.refresh();
+  }
+}
+
+class OnboardingJobPicture with OnboardingStepController {
+  OnboardingController _controller;
+
+  OnboardingJobPicture(this._controller);
+
+  String get title => 'onboarding.job_picture.title'.tr;
+
+  OnboardingStep next() {
+    return OnboardingStep.Address;
+  }
+
+  OnboardingStep prev() {
+    return OnboardingStep.JobVehicle;
   }
 }
 
@@ -174,6 +196,8 @@ class OnboardingMechanicServices with OnboardingStepController {
   OnboardingController _controller;
 
   OnboardingMechanicServices(this._controller);
+
+  String get title => 'onboarding.mechanic_services.title'.tr;
 
   OnboardingStep next() {
     return OnboardingStep.Address;
@@ -189,6 +213,9 @@ class OnboardingAddress with OnboardingStepController {
 
   OnboardingAddress(this._controller);
 
+  String get title => _controller.profileType.value == ProfileType.Mechanic ?
+  'onboarding.mechanic_address.title'.tr : 'onboarding.job_address.title'.tr;
+
   OnboardingStep next() {
     return OnboardingStep.Description;
   }
@@ -201,15 +228,13 @@ class OnboardingAddress with OnboardingStepController {
     }
   }
 
-  void setAddress(Address address) {
+  Future<void> setAddress(Address address) async {
     if (_controller.profileType.value == ProfileType.Customer) {
       _controller.jobController.job.value.address = address;
       _controller.jobController.job.refresh();
-    } else {
-      _controller.userController.user.value.address = address;
-      _controller.userController.user.refresh();
     }
-    _controller.next();
+
+    await _controller.userController.editAddress(address);
   }
 }
 
@@ -217,6 +242,9 @@ class OnboardingDescription with OnboardingStepController {
   OnboardingController _controller;
 
   OnboardingDescription(this._controller);
+
+  String get title => _controller.profileType.value == ProfileType.Mechanic ?
+  'onboarding.mechanic_description.title'.tr : 'onboarding.job_description.title'.tr;
 
   OnboardingStep next() {
     return OnboardingStep.Completed;
@@ -276,6 +304,7 @@ class OnboardingController extends GetxController {
       OnboardingStep.Username: OnboardingUsername(this),
       OnboardingStep.JobServices: OnboardingJobServices(this),
       OnboardingStep.JobVehicle: OnboardingJobVehicle(this),
+      OnboardingStep.JobPicture: OnboardingJobPicture(this),
       OnboardingStep.MechanicServices: OnboardingMechanicServices(this),
       OnboardingStep.Address: OnboardingAddress(this),
       OnboardingStep.Description: OnboardingDescription(this),
@@ -317,14 +346,14 @@ class OnboardingController extends GetxController {
           continue;
         } else {
           step.value = next;
-          break;
+          return true;
         }
       } else {
         break;
       }
     }
 
-    return _currentStep != step.value;
+    return false;
   }
 
   Future<bool> prev() async {
@@ -338,14 +367,14 @@ class OnboardingController extends GetxController {
           continue;
         } else {
           step.value = prev;
-          break;
+          return true;
         }
       } else {
         break;
       }
     }
 
-    return _currentStep != step.value;
+    return false;
   }
 
   void submit() async {

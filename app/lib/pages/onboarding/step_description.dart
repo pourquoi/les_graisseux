@@ -5,6 +5,7 @@ import 'package:app/controllers/onboarding.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class StepDescription extends StatefulWidget {
@@ -60,15 +61,13 @@ class _StepDescriptionState extends State<StepDescription>
       key: _formKey,
       child: Column(
         children: [
-          SizedBox(height: 32),
           Spacer(),
           Obx(() => widget.controller.profileType.value == ProfileType.Customer ?
-            Padding(
-            padding: EdgeInsets.only(left: 64, right: 8),
-            child: TextFormField(
+            TextFormField(
               controller: _titleController,
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(
-                icon: Icon(Icons.lock), 
+                icon: Icon(FontAwesomeIcons.paragraph), 
                 labelText: 'Title', 
                 hintText: 'title'
               ),
@@ -78,39 +77,35 @@ class _StepDescriptionState extends State<StepDescription>
                 }
                 return null;
               },
-            )) : 
+            ): 
             SizedBox.shrink()
           ),
-          Padding(
-            padding: EdgeInsets.only(left: 64, right: 8),
-            child: TextFormField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                icon: Icon(Icons.lock), 
-                labelText: 'Description', 
-                hintText: 'description'
-              ),
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'input.required';
-                }
-                return null;
-              },
-            )
+          TextFormField(
+            controller: _descriptionController,
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            decoration: InputDecoration(
+              icon: Icon(FontAwesomeIcons.alignLeft),
+              labelText: 'Description', 
+              hintText: 'description'
+            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'input.required';
+              }
+              return null;
+            },
           ),
-          Padding(
-            padding: EdgeInsets.only(left: 64, right: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Obx(() => RaisedButton(
-                  onPressed: () => widget.controller.loading.value ? null : submit(),
-                  child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
-                )),
-              ]
-            )
-          ),
-          Spacer()
+          Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Obx(() => RaisedButton(
+                onPressed: () => widget.controller.loading.value ? null : submit(),
+                child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+              )),
+            ]
+          )
         ],
       )
     );

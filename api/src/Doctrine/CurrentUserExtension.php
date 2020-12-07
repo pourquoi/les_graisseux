@@ -23,7 +23,7 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
     {
-        $this->addWhere($queryBuilder, $resourceClass);
+        $this->addWhere($queryBuilder, $resourceClass, true);
     }
 
     public function applyToItem(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, array $identifiers, string $operationName = null, array $context = []): void
@@ -31,7 +31,7 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
         $this->addWhere($queryBuilder, $resourceClass);
     }
 
-    private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
+    private function addWhere(QueryBuilder $queryBuilder, string $resourceClass, bool $isCollection=false): void
     {
         $classes = [
             ChatRoom::class,
@@ -47,19 +47,6 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
         $rootAlias = $queryBuilder->getRootAliases()[0];
 
         switch($resourceClass) {
-            case ChatRoom::class:
-                $queryBuilder
-                    ->leftJoin(sprintf('%s.users', $rootAlias), 'chat_users')
-                    ->andWhere('chat_users.user = :user')
-                    ->setParameter('user', $this->security->getUser());
-                break;
-            case ChatMessage::class:
-                $queryBuilder
-                    ->innerJoin(sprintf('%s.room', $rootAlias), 'chat_room')
-                    ->leftJoin('chat_room.users', 'chat_users')
-                    ->andWhere('chat_users.user = :user')
-                    ->setParameter('user', $this->security->getUser());
-                break;
             case JobApplication::class:
                 $queryBuilder
                     ->innerJoin(sprintf('%s.mechanic', $rootAlias), 'm')

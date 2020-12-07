@@ -24,7 +24,7 @@ class _StepProfileState extends State<StepProfile> with SingleTickerProviderStat
     keys = List.generate(2, (_) => GlobalKey<ItemFaderState>());
   }
 
-  void submit() async {
+  Future submit() async {
     for (GlobalKey<ItemFaderState> key in keys) {
       if (key.currentState != null) {
         await key.currentState.hide();
@@ -35,34 +35,35 @@ class _StepProfileState extends State<StepProfile> with SingleTickerProviderStat
 
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: 32),
         Spacer(),
         ItemFader(
           itemCount: 2,
           itemIndex: 0,
           key: keys[0],
-          child: RaisedButton(
-            onPressed: () {
+          child: Obx(() => RadioListTile<ProfileType>(
+            title: Text('onboarding.profile.choice_customer'.tr),
+            value: ProfileType.Customer,
+            groupValue: widget.controller.profileType.value,
+            onChanged: (val) {
               stepController.selectProfile(ProfileType.Customer);
               submit();
-            },
-            child: Text('onboarding.profile.choice_customer'.tr)
-          )
+            }
+          ))
         ),
         ItemFader(
           key: keys[1],
           itemCount: 2,
           itemIndex: 1,
-          child: RaisedButton(
-            onPressed: () {
+          child: Obx(() => RadioListTile<ProfileType>(
+            title: Text('onboarding.profile.choice_mechanic'.tr),
+            value: ProfileType.Mechanic,
+            groupValue: widget.controller.profileType.value,
+            onChanged: (val) async {
               stepController.selectProfile(ProfileType.Mechanic);
-              submit();
-            },
-            child: Text('onboarding.profile.choice_mechanic'.tr)
-          )
+              await submit();
+            }
+          ))
         ),
         Spacer()
       ],

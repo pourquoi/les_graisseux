@@ -1,0 +1,3 @@
+App\Entity\MediaObject:
+  picture_1..10:
+    filePath: 'test.jpg'

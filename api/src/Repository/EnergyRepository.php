@@ -19,6 +19,16 @@ class EnergyRepository extends ServiceEntityRepository
         parent::__construct($registry, Energy::class);
     }
 
+    public function findOneByName(string $name, string $locale)
+    {
+        return $this->createQueryBuilder('e')
+                ->leftJoin('e.translations', 'trans')
+                ->where('trans.name = :name')->setParameter('name', $name)
+                ->andWhere('trans.locale = :locale')->setParameter('locale', $locale)
+                ->getQuery()->getOneOrNullResult()
+            ;
+    }
+
     // /**
     //  * @return Energy[] Returns an array of Energy objects
     //  */

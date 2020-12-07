@@ -7,6 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\MechanicServiceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ApiResource(
@@ -55,7 +56,7 @@ class MechanicService
      * @var Mechanic
      * @ORM\ManyToOne(targetEntity="Mechanic", inversedBy="services")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"mechanic_service:read", "mechanic_service:write"})
+     * @Groups({"mechanic_service:write"})
      */
     protected $mechanic;
 

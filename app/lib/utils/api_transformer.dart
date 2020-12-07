@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 
+/// Extends the default dio transformer to handle application/ld+json mime type.
 class ApiTransformer extends Transformer {
   ApiTransformer();
 

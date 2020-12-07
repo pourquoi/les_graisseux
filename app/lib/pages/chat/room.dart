@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:app/controllers/account/chat.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/chat.dart';
-import 'package:app/widgets/ui/drawer.dart';
+import 'package:app/widgets/chat/chat_message_card.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class ChatRoomPage extends StatefulWidget
@@ -18,20 +19,29 @@ class ChatRoomPage extends StatefulWidget
 class _ChatRoomPageState extends State<ChatRoomPage>
 {
   TextEditingController _messageController;
-  ScrollController _scrollController = ScrollController();
+  Worker _scrollWorker;
+  ScrollController _scrollController;
 
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _messageController = TextEditingController();
 
-    bool isNew = false;
-    try {
-      isNew = Get.arguments['new'];
-    } catch(error) {}
+    _scrollWorker = ever(widget.controller.roomMessages, (_) {
+      scrollBotttom();
+    });
 
-    if (!isNew) {
+    if (Get.parameters['chat'] != null) {
       widget.controller.loadRoom(Get.parameters['chat']);
+    } else if (widget.controller.room.value.id != null) {
+      widget.controller.loadRoom(widget.controller.room.value.uuid);
     }
+  }
+
+  void dispose() {
+    _messageController.dispose();
+    _scrollWorker.dispose();
+    super.dispose();
   }
 
   void submit() async {
@@ -40,26 +50,77 @@ class _ChatRoomPageState extends State<ChatRoomPage>
     scrollBotttom();
   }
 
-  Widget buildRow(BuildContext context, int idx) {
-    return GestureDetector(
-      onTap: () {
-        
-      },
-      child: Padding(
-        padding: EdgeInsets.all(40),
-        child: Column(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: buildTitle(context)
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Obx(() => 
+          Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: widget.controller.roomMessages.length,
+                itemBuilder: (BuildContext context, int idx) {
+                  ChatMessage msg = widget.controller.roomMessages[idx];
+                  return ChatMessageCard(message: msg);
+                }
+              )
+          )),
+          buildInput(context)
+        ],
+      )       
+    );
+  }
+
+  Widget buildInput(BuildContext context) {
+    return Container(
+      child: Card(
+        child: Padding(
+          padding: EdgeInsets.all(15),
+          child: Row(
           children: [
-            Row(
-              children: [
-                Text('${widget.controller.roomMessages[idx].user.user.username} ${widget.controller.roomMessages[idx].user.id}'),
-                Text(widget.controller.roomMessages[idx].date)
-              ]
-            ),
-            Text('${widget.controller.roomMessages[idx].message} ${idx}')
+            Obx(() {
+              return Expanded(
+                child: TextFormField(
+                  maxLines: null,
+                  onTap: () => scrollBotttom(),
+                  enabled: !widget.controller.sending.value,
+                  controller: _messageController,       
+                  keyboardType: TextInputType.multiline,
+                  decoration: InputDecoration(
+                    hintText: 'Comment',
+                  )
+                ),
+              );
+            }),
+            Obx(() {
+              if (widget.controller.sending.value) {
+                return CircularProgressIndicator();
+              } else {
+                return MaterialButton(
+                  padding: EdgeInsets.all(16),
+                  shape: CircleBorder(),
+                  color: Colors.indigoAccent,
+                  child: Icon(Icons.send), onPressed: () {
+                  submit();
+                });
+              }
+            })
           ]
         )
-      )
+      ))
     );
+  }
+
+  Widget buildTitle(BuildContext context) {
+    return Obx(() {
+      if (widget.controller.loading.value) return Text('...');
+      ChatRoom room = widget.controller.room.value;
+      return Text(room.title??'');
+    });
   }
 
   void scrollBotttom() {
@@ -68,69 +129,4 @@ class _ChatRoomPageState extends State<ChatRoomPage>
         () => _scrollController.jumpTo(_scrollController.position.maxScrollExtent));
   }
 
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Obx(() {
-          ChatUser interlocutor;
-          if (widget.userController.user.value.id != null) {
-            interlocutor = widget.controller.room.value.getInterlocutor(widget.userController.user.value.id);
-          }
-          if (interlocutor != null) {
-            return Text(interlocutor.user.username ?? '-');
-          } else {
-            return Text('...');
-          }
-        })
-      ),
-      body: 
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Obx(() => 
-            Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: widget.controller.roomMessages.length,
-                  itemBuilder: (BuildContext context, int idx) {
-                    return buildRow(context, idx);
-                  }
-                )
-            )),
-            Container(
-              height: 80,
-              child:
-              Row(
-                children: [
-                  Obx(() {
-                    return Expanded(
-                      child: TextFormField(
-                        onTap: () => scrollBotttom(),
-                        enabled: !widget.controller.sending.value,
-                        controller: _messageController,       
-                        keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
-                          icon: Icon(Icons.lock),
-                          hintText: 'message',
-                        )
-                      ),
-                    );
-                  }),
-                  Obx(() {
-                    if (widget.controller.sending.value) {
-                      return CircularProgressIndicator();
-                    } else {
-                      return IconButton(icon: Icon(Icons.send), onPressed: () {
-                        submit();
-                      });
-                    }
-                  })
-                ]
-              )
-            )
-
-          ],
-        )       
-      );
-  }
 }

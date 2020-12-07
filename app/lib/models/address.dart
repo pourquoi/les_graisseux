@@ -1,5 +1,5 @@
 import 'package:app/models/common.dart';
-import 'package:app/services/google/place_service.dart';
+import 'package:app/services/google/places.dart';
 
 class Address extends HydraResource
 {

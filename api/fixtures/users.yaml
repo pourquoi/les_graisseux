@@ -18,6 +18,11 @@ App\Entity\Address:
     locality: Bagnolet
     __calls:
       - setCoordinates: [[2.425216, 48.867338]]
+  steveaddress:
+    country: FR
+    locality: Marseille
+    __calls:
+      - setCoordinates: [[5.36978, 43.296482]]
   useraddress_{1..10}:
     country: FR
     locality: <city()>
@@ -55,6 +60,12 @@ App\Entity\User:
     password: <{hash}>
     username: alice
     address: '@aliceaddress'
+  steve:
+    created_at: <dateTime()>
+    email: steve@example.com
+    password: <{hash}>
+    username: steve
+    address: '@steveaddress'
   unverified_user:
     created_at: <dateTime()>
     email: unverified@example.com

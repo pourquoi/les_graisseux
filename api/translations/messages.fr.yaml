@@ -8,3 +8,8 @@ email:
     body: Cliquez sur le lien ci-dessous pour confirmez votre adresse email et pouvoir entrer en contact avec les membres.
     cta: Confirmer mon email
     footnote: Ce lien valide pendant 48h. Si vous n'êtes pas à l'origine de cet email veuillez l'ignorer.
+
+resource:
+  chat_room:
+    conversation_with: Chat with %username%
+    public_chat: Room %id%

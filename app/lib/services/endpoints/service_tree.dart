@@ -1,5 +1,5 @@
 import 'package:app/models/service_tree.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 
 class ServiceTreeQueryParameters extends PaginatedQueryParameters {
   bool root;
@@ -8,7 +8,7 @@ class ServiceTreeQueryParameters extends PaginatedQueryParameters {
 
   Map<String, dynamic> toJson() {
     return super.toJson()..addAll({
-      'root': root
+      'translations.label': q
     });
   }
 }

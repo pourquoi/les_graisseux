@@ -1,27 +1,28 @@
+import 'package:app/services/crud.dart';
 import 'package:app/services/endpoints/service_tree.dart';
 import 'package:get/state_manager.dart';
 
 class ServicesController extends GetxController {
-  ServiceTreeService serviceTreeService;
+  ServiceTreeService _crud;
 
   final items = [].obs;
-
   final loading = false.obs;
+  final params = ServiceTreeQueryParameters().obs;
+  final pagination = PaginatedQueryResponse().obs;
 
   void onInit() {
-    serviceTreeService = Get.find<ServiceTreeService>();
-
-    search();
+    _crud = Get.find<ServiceTreeService>();
+    load();
   }
 
-  void search({String q}) {
+  Future load() async {
     loading.value = true;
-    serviceTreeService.search(ServiceTreeQueryParameters()).then((response) {
-      items.value = response.items;
+    try {
+      pagination.value = await _crud.search(params.value);
+      items.value = pagination.value.items;
+    } catch(err) {
+    } finally {
       loading.value = false;
-    }).catchError((error) {
-      loading.value = true;
-      throw error;
-    });
+    }
   }
 }

@@ -26,6 +26,8 @@
 
 /public/test/
 /public/upload/
+/public/media/brand/
+!/public/media/brand/.gitkeep
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/

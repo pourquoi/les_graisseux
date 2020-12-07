@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:app/services/api.dart';
 import 'package:app/services/endpoints/service_tree.dart';
 import 'package:app/models/service_tree.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 
 class MockApi extends Mock implements ApiService {}
 

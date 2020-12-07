@@ -1,7 +1,6 @@
 import 'package:app/controllers/user.dart';
 import 'package:app/models/customer.dart';
 import 'package:app/models/job.dart';
-import 'package:app/models/service_tree.dart';
 import 'package:app/models/user.dart';
 import 'package:app/services/endpoints/customer.dart';
 import 'package:app/services/endpoints/job.dart';

@@ -7,11 +7,15 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\VehicleTreeRepository;
+use App\Utils\Dataset\DatasetItemInterface;
+use App\Utils\Dataset\ProviderContextInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 /**
  * @ApiResource(
@@ -35,10 +39,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *       }
  *     }
  * )
- * @ApiFilter(SearchFilter::class, properties={"level": "exact", "name": "word_start", "energy.id": "exact", "energy.translations.name": "word_start"})
+ * @ApiFilter(SearchFilter::class, properties={"level": "exact", "name": "word_start", "q": "word_start", "energy.id": "exact", "energy.translations.name": "word_start"})
  * @ORM\Entity(repositoryClass=VehicleTreeRepository::class)
+ * @Vich\Uploadable
+ * @ORM\HasLifecycleCallbacks()
  */
-class VehicleTree
+class VehicleTree implements DatasetItemInterface
 {
     const LEVEL_BRAND = 'brand';
     const LEVEL_FAMILY = 'family';
@@ -72,6 +78,12 @@ class VehicleTree
     protected $name;
 
     /**
+     * @var string
+     * @ORM\Column(type="text", nullable=true)
+     */
+    protected $q;
+
+    /**
      * @var Energy
      * @ORM\ManyToOne(targetEntity="Energy", cascade={"persist"})
      * @Groups({"read", "write"})
@@ -86,10 +98,15 @@ class VehicleTree
     private $release_date;
 
     /**
+     * @ORM\Column(type="string", length=512, nullable=true)
+     */
+    private $logoPath;
+
+    /**
      * @var VehicleTree
      * @ORM\ManyToOne(targetEntity="VehicleTree", inversedBy="children", cascade={"persist"})
      * @ApiSubresource()
-     * @Groups({"vehicle:read", "vehicle:write"})
+     * @Groups({"vehicle:read", "job:read", "vehicle:write"})
      */
     protected $parent;
 
@@ -100,9 +117,59 @@ class VehicleTree
      */
     protected $children;
 
+    /**
+     * @var Collection|ProviderContext[]
+     * @ORM\ManyToMany(targetEntity="ProviderContext", cascade={"persist"})
+     */
+    protected $providers;
+
+    /**
+     * @var File|null
+     *
+     * @Vich\UploadableField(mapping="brand", fileNameProperty="logoPath")
+     */
+    public $logo;
+
+    /**
+     * @var string
+     * @Groups("read")
+     */
+    public $logoUrl;
+
+    /**
+     * @var string
+     * @Groups("read")
+     */
+    public $logoThumbUrl;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
+        $this->providers = new ArrayCollection();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        $this->q = $this->computeQ();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function preUpdate()
+    {
+        $this->q = $this->computeQ();
+    }
+
+    public function computeQ()
+    {
+        $q = [];
+        if ($this->name) $q[] = $this->name;
+        if ($this->parent) $q[] = $this->parent->computeQ();
+        return join(' ', $q);
     }
 
     public function getId(): ?int
@@ -183,9 +250,62 @@ class VehicleTree
         return $this->level;
     }
 
-    public function setLevel(string $level): void
+    public function setLevel(string $level): self
     {
         $this->level = $level;
+        return $this;
     }
 
+    public function getQ(): ?string
+    {
+        return $this->q;
+    }
+
+    public function setQ(?string $q): self
+    {
+        $this->q = $q;
+        return $this;
+    }
+
+    public function getProviderContexts(): ?array
+    {
+        return $this->providers->toArray();
+    }
+
+    public function getProviderContext(string $key): ?ProviderContextInterface
+    {
+        foreach($this->providers as $provider) {
+            if ($provider->getProviderKey() === $key) return $provider;
+        }
+        return null;
+    }
+
+    public function addProviderContext(ProviderContext $context): self
+    {
+        if (!$this->providers->contains($context)) {
+            $this->providers->add($context);
+        }
+
+        return $this;
+    }
+
+    public function removeProviderContext(ProviderContext $context): self
+    {
+        if ($this->providers->contains($context)) {
+            $this->providers->remove($context);
+        }
+
+        return $this;
+    }
+
+    public function getLogoPath(): ?string
+    {
+        return $this->logoPath;
+    }
+
+    public function setLogoPath(?string $logoPath): self
+    {
+        $this->logoPath = $logoPath;
+        return $this;
+    }
 }

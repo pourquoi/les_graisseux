@@ -1,7 +1,5 @@
 import 'package:app/models/vehicle_tree.dart';
-import 'package:app/services/crud_service.dart';
-
-enum VehicleTreeLevel { brand, family, model, type }
+import 'package:app/services/crud.dart';
 
 class VehicleTreeQueryParameters extends PaginatedQueryParameters {
   String level;
@@ -10,9 +8,8 @@ class VehicleTreeQueryParameters extends PaginatedQueryParameters {
 
   Map<String, dynamic> toJson() {
     return super.toJson()..addAll({
-      'name': q,
-      'level': level == '' ? null : level
-    });
+      'level': level
+    })..removeWhere((key, value) => value == null);
   }
 }
 

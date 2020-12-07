@@ -12,7 +12,7 @@ class VehicleTreeTest extends Base
 {
     use ReloadDatabaseTrait;
 
-    public function testGetCollection(): void
+    public function test_listing(): void
     {
         $response = static::createClient()->request('GET', '/api/vehicles');
 
@@ -21,7 +21,7 @@ class VehicleTreeTest extends Base
         $this->assertTrue($response->toArray()['hydra:totalItems'] > 0);
     }
 
-    public function testCreate(): void
+    public function test_create_sequential(): void
     {
         $client = static::createClient();
 
@@ -62,7 +62,7 @@ class VehicleTreeTest extends Base
         $this->assertResponseIsSuccessful();
     }
 
-    public function testCreateFull(): void
+    public function test_create_full(): void
     {
         $client = static::createClient();
 

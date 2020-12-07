@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'dart:ui' as ui;
 import 'package:get_storage/get_storage.dart';
 import 'package:app/i18n/messages.dart';
+import 'package:flutter/services.dart';
 
 import 'package:app/routes.dart' as routes;
 
@@ -26,11 +27,11 @@ import 'package:app/controllers/user.dart';
 import 'package:app/controllers/app.dart';
 
 import 'package:app/pages/home.dart';
-import 'package:app/pages/job.dart';
-import 'package:app/pages/jobs.dart';
+import 'package:app/pages/jobs/job.dart';
+import 'package:app/pages/jobs/jobs.dart';
 import 'package:app/pages/login.dart';
-import 'package:app/pages/mechanic.dart';
-import 'package:app/pages/mechanics.dart';
+import 'package:app/pages/mechanics/mechanic.dart';
+import 'package:app/pages/mechanics/mechanics.dart';
 import 'package:app/pages/account.dart';
 import 'package:app/pages/account/job.dart';
 import 'package:app/pages/account/jobs.dart';
@@ -42,7 +43,7 @@ void main() async {
   runApp(MyAppBuilder());
 }
 
-Future<dynamic> bootstrap() async {
+Future bootstrap() async {
   await GetStorage.init();
 
   Get.put<ApiService>(ApiService());
@@ -70,13 +71,7 @@ Future<dynamic> bootstrap() async {
   return true;
 }
 
-class SplashImage extends StatefulWidget
-{
-  SplashImage({Key key}) : super(key: key);
-  _SplashImageState createState() => _SplashImageState();
-}
-
-class _SplashImageState extends State<SplashImage>
+class SplashImage extends StatelessWidget
 {
   Widget build(BuildContext context) {
     return Container(
@@ -95,7 +90,7 @@ class MyAppBuilder extends StatelessWidget {
           messages.keys['en']['app.title'];
     
     return FutureBuilder<dynamic>(
-        future: Future.wait([bootstrap(), Future.delayed(Duration(seconds: 3))]),
+        future: Future.wait([bootstrap(), Future.delayed(Duration(seconds: 2))]),
         builder: (context, snapshot) {
           Widget content;
           if (snapshot.hasData) {
@@ -152,7 +147,7 @@ class MyApp extends StatelessWidget {
   final AppController appController = Get.find();
 
   String get initialRoute {
-    if (userController.status.value == UserStatus.loggedin || appController.onboardingSkipped.value) {
+    if (userController.loggedIn.value || appController.onboardingSkipped.value) {
       return routes.home;
     }
 
@@ -161,17 +156,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    
     Translations messages = Messages();
 
     return GetMaterialApp(
       translations: messages,
-      locale: ui.window.locale,
-      fallbackLocale: Locale('en', 'US'),
+      locale: Locale('fr'),//ui.window.locale,
+      fallbackLocale: Locale('fr'),
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.amber,
+        primaryColor: Colors.amber,
+        inputDecorationTheme: InputDecorationTheme(
+          
+        ),
         brightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      routingCallback: (Routing routing) {
+        appController.routing = routing;
+      },
       initialRoute: initialRoute,
       getPages: [
         GetPage(

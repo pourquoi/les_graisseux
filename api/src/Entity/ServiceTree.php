@@ -8,6 +8,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Entity\Translation\ServiceTranslation;
 use App\Repository\ServiceTreeRepository;
+use App\Utils\Dataset\DatasetItemInterface;
+use App\Utils\Dataset\ProviderContextInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -41,7 +43,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ApiFilter(SearchFilter::class, properties={"translations.label": "word_start"})
  * @ORM\Entity(repositoryClass=ServiceTreeRepository::class)
  */
-class ServiceTree extends AbstractTranslatable
+class ServiceTree extends AbstractTranslatable implements DatasetItemInterface
 {
     use Traits\PopularityTrait;
 
@@ -94,10 +96,17 @@ class ServiceTree extends AbstractTranslatable
      */
     protected $translations;
 
+    /**
+     * @var Collection|ProviderContext[]
+     * @ORM\ManyToMany(targetEntity="ProviderContext", cascade={"persist"})
+     */
+    protected $providers;
+
     public function __construct()
     {
         parent::__construct();
         $this->children = new ArrayCollection();
+        $this->providers = new ArrayCollection();
     }
 
     protected function createTranslation(): TranslationInterface
@@ -189,4 +198,34 @@ class ServiceTree extends AbstractTranslatable
         return $this;
     }
 
+    public function getProviderContexts(): ?array
+    {
+        return $this->providers->toArray();
+    }
+
+    public function getProviderContext(string $key): ?ProviderContextInterface
+    {
+        foreach($this->providers as $provider) {
+            if ($provider->getProviderKey() === $key) return $provider;
+        }
+        return null;
+    }
+
+    public function addProviderContext(ProviderContext $context): self
+    {
+        if (!$this->providers->contains($context)) {
+            $this->providers->add($context);
+        }
+
+        return $this;
+    }
+
+    public function removeProviderContext(ProviderContext $context): self
+    {
+        if ($this->providers->contains($context)) {
+            $this->providers->remove($context);
+        }
+
+        return $this;
+    }
 }

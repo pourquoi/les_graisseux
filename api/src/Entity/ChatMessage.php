@@ -9,25 +9,31 @@ use App\Repository\ChatMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use App\Dto\Chat;
+use App\Dto;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
  *     normalizationContext={"groups"={"read", "chat_message:read"}},
  *     denormalizationContext={"groups"={"write", "chat_message:write"}},
+ *     graphql = {
+ *         "collection_query" = {
+ *             "normalization_context"={"groups"={"read", "chat_message:read", "chat_message:read:room"}}
+ *         }
+ *     },
  *     collectionOperations={
- *         "get"={
+ *         "get" = {
  *         },
- *         "get_list"={
- *             "method"="GET",
- *             "path"="/chat_messages/feed",
- *             "normalization_context"={"groups"={"read", "chat_message:read", "chat_message:list"}},
+ *         "get_list" = {
+ *             "method" = "GET",
+ *             "path" = "/chat_messages/feed",
+ *             "normalization_context"={"groups"={"read", "chat_message:read", "chat_message:read:room"}},
  *         },
  *         "post": {
  *             "method"="POST",
  *             "security"="is_granted('ROLE_USER')",
- *             "input"=Chat\Reply::class
+ *             "input"=Dto\Input\ChatMessage::class,
+ *             "normalization_context"={"groups"={"read", "chat_message:read", "chat_message:read:room"}}
  *         }
  *     },
  *     itemOperations={
@@ -67,9 +73,9 @@ class ChatMessage
 
     /**
      * @var ChatRoom
-     * @ORM\ManyToOne(targetEntity="ChatRoom")
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups("chat_message:list")
+     * @ORM\ManyToOne(targetEntity="ChatRoom", inversedBy="messages")
+     * @ORM\JoinColumn(nullable=false, name="room_id", referencedColumnName="id", onDelete="cascade")
+     * @Groups({"chat_message:read:room", "chat_message:write"})
      */
     protected $room;
 

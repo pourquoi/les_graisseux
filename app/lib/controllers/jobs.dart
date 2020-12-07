@@ -1,5 +1,5 @@
 import 'package:app/models/job.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 import 'package:app/services/endpoints/job.dart';
 import 'package:get/state_manager.dart';
 
@@ -10,34 +10,41 @@ class JobsController extends GetxController {
 
   final pagination = PaginatedQueryResponse<Job>().obs;
 
-  JobService jobService;
+  JobService _crud;
 
   void onInit() {
-    jobService = Get.find<JobService>();
+    _crud = Get.find<JobService>();
+    //ever(params, (_) => load());
   }
 
-  Future<bool> load() {
+  Future load() async {
     pagination.value = PaginatedQueryResponse<Job>();
     loading.value = true;
-    return jobService.search(params.value).then((response) {
-      pagination.value = response;
+    try {
+      pagination.value = await _crud.search(params.value);
       items.value = pagination.value.items;
+    } catch(err) {
+    } finally {
       loading.value = false;
-      return true;
-    }).catchError((error) {
-      loading.value = true;
-      return false;
-    });
+    }
   }
 
-  Future<bool> more() {
+  Future more() async {
     if (pagination.value.next != null) {
-      return jobService.next(pagination.value).then((response) {
-        pagination.value = response;
-        items.addAll(response.items);
-        return true;
-      });
+      loading.value = true;
+      try {
+        pagination.value = await _crud.next(pagination.value);
+        items.addAll(pagination.value.items);
+      } catch(err) {
+      } finally {
+        loading.value = false;
+      }
     }
-    return Future.value(false);
+  }
+
+  Future sortBy(String sort) async {
+    params.value.sort = sort;
+    params.refresh();
+    return await load();
   }
 }

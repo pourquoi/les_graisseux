@@ -8,7 +8,10 @@ use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 
 class MediaObjectTest extends Base
 {
-    const UPLOAD_DIR = __DIR__ . '/../../public/test/upload';
+    public function setUp(): void {
+        parent::setUp();
+        copy(__DIR__ . '/../data/profile.jpg', self::UPLOAD_DIR . '/test.jpg');
+    }
 
     public function tearDown(): void
     {
@@ -18,7 +21,7 @@ class MediaObjectTest extends Base
         parent::tearDown();
     }
 
-    public function testUpload(): void
+    public function test_upload(): void
     {
         $client = self::createClient();
 

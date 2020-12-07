@@ -4,9 +4,9 @@ import 'package:app/controllers/onboarding.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/address.dart';
 import 'package:app/models/user.dart';
-import 'package:app/pages/address_picker.dart';
 import 'package:app/pages/onboarding/common.dart';
-import 'package:app/services/google/place_service.dart';
+import 'package:app/services/google/places.dart';
+import 'package:app/widgets/form/address.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,8 +22,6 @@ class StepAddress extends StatefulWidget {
 }
   
 class _StepAddressState extends State<StepAddress> {
-  final _controller = TextEditingController();
-
   OnboardingAddress get stepController => widget.controller.steps[OnboardingStep.Address];
 
   List<GlobalKey<ItemFaderState>> keys;
@@ -34,7 +32,6 @@ class _StepAddressState extends State<StepAddress> {
   }
 
   void dispose() {
-    _controller.dispose();
     super.dispose();
   }
 
@@ -59,58 +56,30 @@ class _StepAddressState extends State<StepAddress> {
       children: <Widget>[
         SizedBox(height: 32),
         Spacer(),
-        Padding(
-          padding: EdgeInsets.only(left: 64, right: 8),
-          child: TextField(
-            controller: _controller,
-            readOnly: true,
-            onTap: () async {
-              widget.placeApi.initSession();
-
-              final Suggestion result = await showSearch(
-                context: context,
-                delegate: AddressSearch(),
-              );
-              
-              if (result != null) {
-                final placeDetails = await widget.placeApi.getPlaceDetailFromId(result.placeId);
-                setState(() {
-                  //_controller.text = result.description;
-                  Address address = Address.fromPlace(placeDetails);
-                  stepController.setAddress(address);
-                  _controller.text = address.toString();
-                });
+        ItemFader(
+          itemCount: 1,
+          itemIndex: 0,
+          key: keys[0],
+          child: Obx(() {
+            Address address = widget.controller.profileType.value == ProfileType.Customer ? widget.jobController.job.value.address : widget.userController.user.value.address;
+            return AddressForm(
+              address: address,
+              onChange: (address) async {
+                await stepController.setAddress(address);
               }
-            },
-            decoration: InputDecoration(
-              icon: Container(
-                width: 10,
-                height: 10,
-                child: Icon(
-                  Icons.home,
-                  color: Colors.black,
-                ),
-              ),
-              hintText: "Enter your shipping address",
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
-            ),
-          ),
+            );
+          })
         ),
-        SizedBox(height: 24,),
-        Padding(
-          padding: EdgeInsets.only(left: 64, right: 32),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Obx(() => RaisedButton(
-                onPressed: () => widget.controller.loading.value ? null : submit(),
-                child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
-              )),
-            ]
-          )
-        ),
-        Spacer()
+        Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Obx(() => RaisedButton(
+              onPressed: () => widget.controller.loading.value ? null : submit(),
+              child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+            )),
+          ]
+        )
       ]
     );
   }

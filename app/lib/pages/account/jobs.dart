@@ -1,8 +1,8 @@
 import 'package:app/controllers/jobs.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/user.dart';
-import 'package:app/widgets/ui/drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'package:app/routes.dart' as routes;
@@ -30,34 +30,89 @@ class _AccountJobsPageState extends State<AccountJobsPage> {
         floatingActionButton: IconButton(icon: Icon(Icons.add), onPressed: () {
           Get.toNamed(routes.onboarding, arguments: {'type': ProfileType.Customer});
         }),
-        drawer: AppDrawer(),
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: <Widget>[
             SliverAppBar(
-              
+              title: Text('My jobs'),
               floating: true,
               snap: false,
               actions: <Widget>[
-                IconButton(icon: Icon(Icons.settings), onPressed: null)
               ],
               pinned: true,
-              expandedHeight: 150.0,
+              expandedHeight: 100.0,
               flexibleSpace: FlexibleSpaceBar(
                 background: SafeArea(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          RaisedButton(
+                            onPressed: () {
+                              Get.bottomSheet(
+                                Container(
+                                  child: Column(
+                                    children: [
+                                      RadioListTile(
+                                        title: Text('Hot'),
+                                        value: 'hot', 
+                                        groupValue: widget.controller.params.value.sort, 
+                                        onChanged: (_) {
+                                          widget.controller.params.value.sort = 'hot';
+                                          widget.controller.params.refresh();
+                                          widget.controller.load();
+                                          Get.back();
+                                        }
+                                      ),
+                                      RadioListTile(
+                                        title: Text('New'),
+                                        value: 'new', 
+                                        groupValue: widget.controller.params.value.sort, 
+                                        onChanged: (_) {
+                                          widget.controller.params.value.sort = 'new';
+                                          widget.controller.params.refresh();
+                                          widget.controller.load();
+                                          Get.back();
+                                        }
+                                      ),
+                                      RadioListTile(
+                                        title: Text('Distance'),
+                                        value: 'distance', 
+                                        groupValue: widget.controller.params.value.sort, 
+                                        onChanged: (_) {
+                                          widget.controller.params.value.sort = 'distance';
+                                          widget.controller.params.refresh();
+                                          widget.controller.load();
+                                          Get.back();
+                                        }
+                                      )
+                                    ],
+                                  )
+                                )
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                Obx(() => widget.controller.params.value.sort != null ?
+                                  Text(widget.controller.params.value.sort.tr) : 
+                                  Text('Sort by')
+                                ),
+                                Icon(FontAwesomeIcons.caretDown)
+                              ],
+                            )
+                          )
+                        ]
+                      )
                     ]
                   )
                 ),
-                
                 stretchModes: <StretchMode>[
                   StretchMode.zoomBackground,
                   StretchMode.blurBackground,
                   StretchMode.fadeTitle,
-                ],
-                title: Text('My jobs')
+                ]
               ),
             ),
             Obx( () =>

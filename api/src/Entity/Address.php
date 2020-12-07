@@ -10,10 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource(
- *     normalizationContext={"groups"={"read", "address:read"}},
- *     denormalizationContext={"groups"={"write", "address:write"}},
- * )
  * @ORM\Entity(repositoryClass=AddressRepository::class)
  */
 class Address

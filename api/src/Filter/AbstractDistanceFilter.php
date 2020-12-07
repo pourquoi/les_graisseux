@@ -5,31 +5,38 @@ namespace App\Filter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 
 abstract class AbstractDistanceFilter extends AbstractContextAwareFilter
 {
     /**
-     * @returns string|null
+     * @param QueryBuilder $queryBuilder
+     * @param QueryNameGeneratorInterface $queryNameGenerator
+     * @param string $resourceClass
+     * @return string|null
      */
     abstract function getAddressAlias(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass);
 
     protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
     {
-        // otherwise filter is applied to order and page as well
-        if (
-            $property !== 'distance'
-        ) {
+        if ($property != 'distance') {
             return;
         }
 
-        if(!$value) return;
+        if (!$value) {
+            return;
+        }
 
         [$lat, $lng, $radius] = explode(',', $value);
 
         $addressAlias = $this->getAddressAlias($queryBuilder, $queryNameGenerator, $resourceClass);
 
-        if( null === $addressAlias )
+        if( null === $addressAlias ) {
             return;
+        }
 
         $queryBuilder->addSelect(
             '(

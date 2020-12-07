@@ -1,13 +1,7 @@
 App\Entity\Customer:
   customeralice:
     user: '@alice'
+  customersteve:
+    user: '@steve'
   customer_{1..10}:
     user: '@user_<current()>'
-
-App\Entity\CustomerVehicle:
-  alicevehicle_{1..2}:
-    customer: '@customeralice'
-    type: '@alfaromeo_159_1'
-  customervehicle_{1..10}:
-    customer: '@customer_*'
-    type: '@alfaromeo_159_1'

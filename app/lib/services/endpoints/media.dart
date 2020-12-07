@@ -2,7 +2,7 @@
 import 'dart:io';
 
 import 'package:app/models/media.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 import 'package:dio/dio.dart';
 
 class MediaService extends CrudService<Media> {

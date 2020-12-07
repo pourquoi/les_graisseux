@@ -40,6 +40,7 @@ class StarRating extends StatelessWidget {
   final int value;
   final IconData filledStar;
   final IconData unfilledStar;
+  final double iconSize;
 
   const StarRating({
     Key key,
@@ -47,29 +48,32 @@ class StarRating extends StatelessWidget {
     this.value = 0,
     this.filledStar,
     this.unfilledStar,
+    this.iconSize = 18
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).accentColor;
-    final size = 36.0;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
-        return IconButton(
+        return SizedBox(
+          width: iconSize+4,
+          height: iconSize+4,
+          child: IconButton(
           onPressed: onChanged != null
               ? () {
                   onChanged(value == index + 1 ? index : index + 1);
                 }
               : null,
           color: value != null && index < value ? color : null,
-          iconSize: size,
+          iconSize: iconSize,
           icon: Icon(
             value != null && index < value ? filledStar ?? Icons.star : unfilledStar ?? Icons.star_border,
           ),
           padding: EdgeInsets.zero,
           tooltip: "${index + 1} of 5",
-        );
+        ));
       }),
     );
   }

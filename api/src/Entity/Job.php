@@ -6,39 +6,53 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use App\Repository\JobRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Filter\JobDistanceFilter;
+use App\Filter\JobVehicleFilter;
+use App\Filter\JobOrderFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\Dto\Job\JobInput;
+use App\Dto;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"read", "job:read"}},
- *     denormalizationContext={"groups"={"write", "job:write"}},
- *     collectionOperations={
- *         "get",
- *         "post"={
- *             "method"="POST",
- *             "security"="is_granted('ROLE_CUSTOMER')",
- *             "security_post_denormalize"="is_granted('CREATE_JOB', object)",
- *             "input"=JobInput::class
+ *     attributes={
+ *         "order" = {
+ *             "created_at": "DESC"
  *         }
  *     },
- *     itemOperations={
+ *     normalizationContext = {"groups" = {"read", "job:read"}, "skip_null_values" = false},
+ *     denormalizationContext = {"groups" = {"write", "job:write"}},
+ *     collectionOperations = {
  *         "get",
- *         "put"={
- *             "method"="PUT",
- *             "security"="is_granted('EDIT_JOB', object)",
- *             "input"=JobInput::class
+ *         "post" = {
+ *             "method" = "POST",
+ *             "security" = "is_granted('ROLE_CUSTOMER')",
+ *             "security_post_denormalize" = "is_granted('CREATE_JOB', object)",
+ *             "input" = Dto\Input\Job::class
  *         }
+ *     },
+ *     itemOperations = {
+ *         "get",
+ *         "put" = {
+ *             "method" = "PUT",
+ *             "security" = "is_granted('EDIT_JOB', object)",
+ *             "input" = Dto\Input\Job::class
+ *         },
+ *         "patch" = {
+ *             "security" = "is_granted('EDIT_JOB', object)",
+ *             "denormalizationContext" = {"groups" = {"job:edit"}}
+ *         },
  *     }
  * )
  * @ORM\Entity(repositoryClass=JobRepository::class)
  * @ApiFilter(SearchFilter::class, properties={"customer.user"})
- * @ApiFilter(JobDistanceFilter::class, properties={"address.geocoordinates"})
+ * @ApiFilter(JobDistanceFilter::class, properties={"distance"})
+ * @ApiFilter(JobVehicleFilter::class, properties={"vehicle"})
+ * @ApiFilter(JobOrderFilter::class, properties={"created_at": "DESC", "distance": "ASC"})
  */
 class Job
 {
@@ -87,7 +101,7 @@ class Job
     /**
      * @var Collection|ServiceTree[]
      * @ORM\ManyToMany(targetEntity="ServiceTree")
-     * @Groups({"read"})
+     * @Groups({"job:read"})
      */
     protected $tasks;
 
@@ -99,8 +113,8 @@ class Job
     protected $customer;
 
     /**
-     * @var CustomerVehicle
-     * @ORM\ManyToOne(targetEntity="CustomerVehicle", cascade={"persist"})
+     * @var UserVehicle
+     * @ORM\ManyToOne(targetEntity="UserVehicle", cascade={"persist"})
      * @Groups({"job:read"})
      */
     protected $vehicle;
@@ -114,10 +128,25 @@ class Job
     protected $address;
 
     /**
+     * @var ChatRoom
+     * @ORM\OneToOne(targetEntity="ChatRoom", inversedBy="job", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"job:read"})
+     */
+    protected $chat;
+
+    /**
      * @var JobApplication[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="JobApplication", mappedBy="job")
      */
     protected $applications;
+
+    /**
+     * @var Collection|MediaObject[]
+     * @ORM\ManyToMany(targetEntity="MediaObject", cascade={"persist", "remove"})
+     * @Groups({"job:read", "job:write", "job:edit"})
+     */
+    protected $pictures;
 
     /**
      * @var JobApplication|null
@@ -143,6 +172,8 @@ class Job
     {
         $this->tasks = new ArrayCollection();
         $this->applications = new ArrayCollection();
+        $this->pictures = new ArrayCollection();
+        $this->chat = new ChatRoom();
     }
 
     public function getId(): ?int
@@ -198,12 +229,12 @@ class Job
         return $this;
     }
 
-    public function getVehicle(): ?CustomerVehicle
+    public function getVehicle(): ?UserVehicle
     {
         return $this->vehicle;
     }
 
-    public function setVehicle(?CustomerVehicle $vehicle): self
+    public function setVehicle(?UserVehicle $vehicle): self
     {
         $this->vehicle = $vehicle;
         return $this;
@@ -265,6 +296,17 @@ class Job
         return $this;
     }
 
+    public function getChat(): ?ChatRoom
+    {
+        return $this->chat;
+    }
+
+    public function setChat(ChatRoom $chat): self
+    {
+        $this->chat = $chat;
+        return $this;
+    }
+
     public function getApplications(): Collection
     {
         return $this->applications;
@@ -283,6 +325,27 @@ class Job
     {
         if ($this->applications->contains($application)) {
             $this->applications->remove($application);
+        }
+        return $this;
+    }
+
+    public function getPictures(): Collection
+    {
+        return $this->pictures;
+    }
+
+    public function addPicture(MediaObject $picture): self
+    {
+        if (!$this->pictures->contains($picture)) {
+            $this->pictures->add($picture);
+        }
+        return $this;
+    }
+
+    public function removePicture(MediaObject $picture): self
+    {
+        if ($this->pictures->contains($picture)) {
+            $this->pictures->remove($picture);
         }
         return $this;
     }

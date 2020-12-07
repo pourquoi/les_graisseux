@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:app/controllers/account/applications.dart';
-import 'package:app/controllers/mechanic.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/job_application.dart';
 import 'package:app/models/mechanic.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 import 'package:app/services/endpoints/job.dart';
-import 'package:app/widgets/ui/drawer.dart';
-import 'package:app/widgets/ui/profile_picture.dart';
+import 'package:app/widgets/form/address.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'package:app/models/service_tree.dart';
@@ -19,8 +18,8 @@ import 'package:app/models/vehicle_tree.dart';
 import 'package:app/controllers/account/mechanic.dart';
 import 'package:app/controllers/app.dart';
 
-import 'package:app/pages/service_picker.dart';
-import 'package:app/pages/vehicle_picker.dart';
+import 'package:app/widgets/popup/service_picker.dart';
+import 'package:app/widgets/popup/vehicle_picker.dart';
 import 'package:app/widgets/ui/stars.dart';
 import 'package:app/routes.dart' as routes;
 
@@ -101,6 +100,7 @@ class _MechanicProfilePageState extends State<MechanicProfilePage>
 class MechanicServicesForm extends StatelessWidget
 {
   final AccountMechanicController controller;
+  final double iconSize = 16;
 
   MechanicServicesForm({Key key, this.controller}) : super(key: key);
 
@@ -118,7 +118,7 @@ class MechanicServicesForm extends StatelessWidget
                     children: [
                       Spacer(),
                       IconButton(
-                        icon: Icon(Icons.close),
+                        icon: Icon(FontAwesomeIcons.times),
                         onPressed: () {
                           controller.mechanic.value.services.remove(mservice);
                           controller.mechanic.refresh();
@@ -127,45 +127,63 @@ class MechanicServicesForm extends StatelessWidget
                     ]
                   ),
                   ListTile(
-                    leading: Icon(Icons.car_repair),
+                    leading: IconButton(
+                      iconSize: iconSize,
+                      padding: EdgeInsets.zero,
+                      icon: Icon(FontAwesomeIcons.car),
+                      onPressed: () {}
+                    ),
                     trailing: IconButton(
-                      icon: Icon(Icons.edit),
+                      iconSize: iconSize,
+                      padding: EdgeInsets.only(left: 5),
+                      icon: Icon(FontAwesomeIcons.pen),
                       onPressed: () async {
-                        VehicleTree vehicle = await Get.to(VehiclePicker());
+                        VehicleTree vehicle = await showSearch(context:context, delegate:VehicleSearch());
                         if (vehicle != null) {
                           mservice.vehicle = vehicle;
                           controller.mechanic.refresh();
                         }
                       },
                     ),
-                    title: mservice.vehicle != null ? Text(mservice.vehicle.name) : Text('-'),
+                    title: mservice.vehicle != null ? Text(mservice.vehicle.name, style: TextStyle(fontSize: 10)) : Text('-'),
                   ),
                   ListTile(
-                    leading: Icon(Icons.build_rounded),
+                    leading: IconButton(
+                      padding: EdgeInsets.zero,
+                      iconSize: iconSize,
+                      icon: Icon(FontAwesomeIcons.toolbox),
+                      onPressed: () {}
+                    ),
                     trailing: IconButton(
-                      icon: Icon(Icons.edit),
+                      iconSize: iconSize,
+                      padding: EdgeInsets.only(left: 5),
+                      icon: Icon(FontAwesomeIcons.pen),
                       onPressed: () async {
-                        ServiceTree service = await Get.to(ServicePicker());
+                        ServiceTree service = await showSearch(context: context, delegate: ServiceSearch());
                         if (service != null) {
                           mservice.service = service;
                           controller.mechanic.refresh();
                         }
                       },
                     ),
-                    title: mservice.service != null ? Text(mservice.service.label) : Text('-'),
+                    title: mservice.service != null ? Text(mservice.service.label, style: TextStyle(fontSize: 10)) : Text('-'),
                   ),
                   ListTile(
-                    title: Center(child: StarRating(
-                      value: mservice.skill,
-                      filledStar: Icons.build_circle,
-                      unfilledStar: Icons.build_circle_outlined,
-                      onChanged: (v) {
-                        mservice.skill = v;
-                        controller.mechanic.refresh();
-                      }
-                    )),
-                    subtitle: Center(child: Text('competence')),
-
+                    title: Center(
+                      child: StarRating(
+                        iconSize: iconSize,
+                        value: mservice.skill,
+                        filledStar: FontAwesomeIcons.solidStar,
+                        unfilledStar: FontAwesomeIcons.star,
+                        onChanged: (v) {
+                          mservice.skill = v;
+                          controller.mechanic.refresh();
+                        }
+                      )
+                    ),
+                    subtitle: Center(
+                      child: Text('skill for this service', style: TextStyle(fontSize: 10))
+                    ),
                   )
                 ]
               )
@@ -219,6 +237,7 @@ class _MechanicServicesTabState extends State<MechanicServicesTab>
 class MechanicInfoTab extends StatefulWidget
 {
   final AccountMechanicController controller = Get.find();
+  final UserController userController = Get.find();
 
   _MechanicInfoTabState createState() => _MechanicInfoTabState();
 }
@@ -258,7 +277,12 @@ class _MechanicInfoTabState extends State<MechanicInfoTab>
         key: _formKey,
         child: Column(
         children: [
-          ProfilePictureWidget(),
+          AddressForm(
+            address: widget.userController.user.value.address,
+            onChange: (address) async {
+              await widget.userController.editAddress(address);
+            },
+          ),
           TextFormField(
             controller: _aboutController,
             decoration: InputDecoration(

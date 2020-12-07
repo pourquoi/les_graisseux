@@ -9,7 +9,7 @@ use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\Dto\User as UserDto;
+use App\Dto;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -20,14 +20,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *         "get",
  *         "post"={
  *             "method"="POST",
- *             "input"=UserDto\CustomerProfile::class
+ *             "input"=Dto\Input\Customer::class
  *         }
  *     },
  *     itemOperations={
  *         "get",
  *         "put"={
  *             "method"="PUT",
- *             "input"=UserDto\CustomerProfile::class
+ *             "input"=Dto\Input\Customer::class
  *         }
  *     }
  * )
@@ -53,17 +53,8 @@ class Customer
      */
     protected $user;
 
-    /**
-     * @var CustomerVehicle[]|Collection
-     * @ORM\OneToMany(targetEntity="CustomerVehicle", mappedBy="customer")
-     * @Groups({"customer:read"})
-     * @ApiSubresource()
-     */
-    protected $vehicles;
-
     public function __construct()
     {
-        $this->vehicles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -79,27 +70,6 @@ class Customer
     public function setUser(User $user): self
     {
         $this->user = $user;
-        return $this;
-    }
-
-    public function getVehicles(): Collection
-    {
-        return $this->vehicles;
-    }
-
-    public function addVehicle(CustomerVehicle $vehicle): self
-    {
-        if( !$this->vehicles->contains($vehicle) ) {
-            $this->vehicles->add($vehicle);
-        }
-        return $this;
-    }
-
-    public function removeVehicle(CustomerVehicle $vehicle): self
-    {
-        if( $this->vehicles->contains($vehicle) ) {
-            $this->vehicles->remove($vehicle);
-        }
         return $this;
     }
 }

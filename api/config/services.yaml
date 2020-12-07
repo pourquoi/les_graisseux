@@ -21,6 +21,10 @@ services:
         bind:
             $appEnv: '%env(APP_ENV)%'
 
+    _instanceof:
+        App\Utils\Dataset\DatasetProviderInterface:
+            tags: ['app.dataset_provider']
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -51,21 +55,43 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    App\Utils\TokenManager:
-        public: true
-
     App\EventSubscriber\AuthenticationSuccessListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
 
-    App\Serializer\ComposedResourceNormalizer:
+    # commands
+
+    App\Command\DatasetUpdateCommand:
+        arguments:
+            - !tagged_iterator app.dataset_provider
+
+    # utils
+    App\Utils\Dataset\Provider\CarLogosProvider:
+        bind:
+            $fs: '@brand.storage'
+
+    # serialization
+
+    App\Serializer\PrivateMercureResourceNormalizer:
         decorates: 'api_platform.jsonld.normalizer.item'
+        bind:
+            $decorated: '@App\Serializer\PrivateMercureResourceNormalizer.inner'
+            $jwt_key: '%env(MERCURE_JWT_KEY)%'
+
+    App\Serializer\ComposedResourceNormalizer:
+        decorates: 'App\Serializer\PrivateMercureResourceNormalizer'
         arguments: [ '@App\Serializer\ComposedResourceNormalizer.inner' ]
 
-    App\Filter\DistanceFilter: ~
+    # media
 
     Liip\ImagineBundle\Service\FilterService:
         alias: 'liip_imagine.service.filter'
+
+    # mercure
+
+    App\DataPersister\MercureDataPersister:
+        bind:
+            $decoratedDataPersister: '@api_platform.doctrine.orm.data_persister'
 
     # inject defaults doctrine data providers
 
@@ -74,7 +100,22 @@ services:
             $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
             $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
 
+    App\DataProvider\JobApplicationDataProvider:
+      bind:
+        $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+        $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
+
+    App\DataProvider\MechanicDataProvider:
+        bind:
+            $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+            $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
+
     App\DataProvider\ChatRoomDataProvider:
+        bind:
+            $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
+            $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'
+
+    App\DataProvider\ChatMessageDataProvider:
         bind:
             $itemDataProvider: '@api_platform.doctrine.orm.default.item_data_provider'
             $collectionDataProvider: '@api_platform.doctrine.orm.default.collection_data_provider'

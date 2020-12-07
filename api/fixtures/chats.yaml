@@ -1,6 +1,10 @@
 App\Entity\ChatRoom:
   chatbobalice: ~
   chatrogeralice: ~
+  publicchat:
+    job: '@jobalice_1'
+  privatechat:
+    private: true
 
 App\Entity\ChatUser:
   chatuseralice1:
@@ -9,12 +13,24 @@ App\Entity\ChatUser:
   chatuserbob1:
     user: '@bob'
     room: '@chatbobalice'
-  chatuserroger1:
+
+  chatuserroger2:
     user: '@roger'
     room: '@chatrogeralice'
   chatuseralice2:
     user: '@alice'
     room: '@chatrogeralice'
+
+  chatuseralice3:
+    user: '@alice'
+    room: '@privatechat'
+  chatuserbob3:
+    user: '@bob'
+    room: '@privatechat'
+
+  chatuserpublic_{1..5}:
+    user: '@user_*'
+    room: '@publicchat'
 
 App\Entity\ChatMessage:
   chatmsgalice1:
@@ -25,7 +41,22 @@ App\Entity\ChatMessage:
     user: '@chatuserbob1'
     room: '@chatbobalice'
     message: <text()>
+
   chatmsgalice2:
     user: '@chatuseralice2'
     room: '@chatrogeralice'
+    message: <text()>
+
+  chatmsgpublic_{1..50}:
+    user: '@chatuserpublic_*'
+    room: '@publicchat'
+    message: <text()>
+
+  chatmsgalice3:
+    user: '@chatuseralice3'
+    room: '@privatechat'
+    message: <text()>
+  chatmsgbob3:
+    user: '@chatuserbob3'
+    room: '@privatechat'
     message: <text()>

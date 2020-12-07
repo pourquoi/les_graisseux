@@ -3,8 +3,9 @@ import 'package:app/controllers/account/job.dart';
 import 'package:app/controllers/onboarding.dart';
 import 'package:app/models/vehicle_tree.dart';
 import 'package:app/pages/onboarding/common.dart';
-import 'package:app/pages/vehicle_picker.dart';
+import 'package:app/widgets/popup/vehicle_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class StepJobVehicle extends StatefulWidget {
@@ -29,8 +30,8 @@ class _StepJobVehicleState extends State<StepJobVehicle> {
     keys = List.generate(1, (_) => GlobalKey<ItemFaderState>());
   }
 
-  void _pickVehicle() async {
-    VehicleTree vehicle = await Get.to(VehiclePicker());
+  void _pickVehicle(BuildContext context) async {
+    VehicleTree vehicle = await showSearch(context: context, delegate: VehicleSearch());
 
     stepController.setVehicle(vehicle);
   }
@@ -59,52 +60,53 @@ class _StepJobVehicleState extends State<StepJobVehicle> {
       children: [
         SizedBox(height: 32),
         Spacer(),
-        Padding(
-          padding: EdgeInsets.only(left: 64, right: 8),
-          child: Obx(() {
-            if (widget.jobController.job.value.vehicle != null && widget.jobController.job.value.vehicle.type != null) {
-              return Row(
+        Obx(() {
+          if (widget.jobController.job.value.vehicle != null && widget.jobController.job.value.vehicle.type != null) {
+            return Card(
+              margin: EdgeInsets.all(0),
+              child: Padding(
+                padding: EdgeInsets.all(5),
+                child: Column(
                 children: [
-                  Text(widget.jobController.job.value.vehicle.type.name ?? '?'), 
-                  IconButton(icon: Icon(Icons.close), onPressed: _pickVehicle)
-                ],
-              );
-            } else {
-              return RaisedButton(
-                onPressed: _pickVehicle, 
-                child: Text('select a car')
-              );
-            }
-          })
-        ),
-        Obx(() => (widget.jobController.job.value.vehicle != null && widget.jobController.job.value.vehicle.type != null) ?
-          Padding(
-            padding: EdgeInsets.only(left: 64, right: 8),
-            child: TextFormField(
-              controller: _kmController, 
-              decoration: InputDecoration(
-                icon: Icon(Icons.email), 
-                labelText: 'Km', 
-                hintText: 'km'
-              ), 
-              keyboardType: TextInputType.number
-            ),
-          ) : SizedBox.shrink()
-        ),
-        SizedBox(height: 24,),
-        Padding(
-          padding: EdgeInsets.only(left: 64, right: 32),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Obx(() => RaisedButton(
-                onPressed: () => widget.controller.loading.value ? null : submit(),
-                child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
-              )),
-            ]
-          )
-        ),
+                  Row(
+                    children: [
+                      Text(widget.jobController.job.value.vehicle.type.fullName ?? '?'),
+                      Spacer() ,
+                      IconButton(
+                        icon: Icon(Icons.close), 
+                        onPressed: () => stepController.setVehicle(null)
+                      )
+                    ],
+                  ),
+                  TextFormField(
+                    controller: _kmController, 
+                    decoration: InputDecoration(
+                      suffix: Text('km'),
+                      icon: Icon(FontAwesomeIcons.tachometerAlt), 
+                      hintText: 'kilométrage'
+                    ), 
+                    keyboardType: TextInputType.number
+                  )
+                ]
+              ))
+            );
+          } else {
+            return OutlineButton(
+              onPressed: () => _pickVehicle(context), 
+              child: Text('Pick a car')
+            );
+          }
+        }),
         Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Obx(() => RaisedButton(
+              onPressed: () => widget.controller.loading.value ? null : submit(),
+              child: widget.controller.loading.value ? CircularProgressIndicator() : Icon(Icons.navigate_next_rounded)
+            )),
+          ]
+        )
       ],
     );
   }

@@ -5,29 +5,29 @@ import 'package:get_storage/get_storage.dart';
 class AppController extends GetxController {
   final profileType = ProfileType.Undefined.obs;
   final onboardingSkipped = false.obs;
-
   final navIndex = 0.obs;
+  Routing routing;
 
   void onInit() {
     profileType.listen((_) {
-      saveToStorage();
+      _store();
     });
 
     onboardingSkipped.listen((_) {
-      saveToStorage();
+      _store();
     });
   }
 
   void onClose() {
-    saveToStorage();
+    _store();
     super.onClose();
   }
 
   Future bootstrap() async {
-    await loadFromStorage();
+    await _read();
   }
 
-  Future loadFromStorage() async {
+  Future _read() async {
     GetStorage box = GetStorage();
     String storedProfile = box.read("app.profile_type");
 
@@ -41,7 +41,7 @@ class AppController extends GetxController {
     if (storedOnboardingSkipped != null) onboardingSkipped.value = storedOnboardingSkipped;
   }
 
-  Future saveToStorage() async {
+  Future _store() async {
     GetStorage box = GetStorage();
     box.write("app.profile_type", profileType.value.toString());
     box.write("app.onboarding_skipped", onboardingSkipped.value);

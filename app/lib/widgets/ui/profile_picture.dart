@@ -52,7 +52,7 @@ class _ProfilePictureState extends State<ProfilePictureWidget>
       color: Colors.transparent,
       child: Column( 
         children: [Obx(() {
-        if (widget.userController.status.value == UserStatus.loggedin) {
+        if (widget.userController.loggedIn.value) {
           return Stack(
             children: [
               Container(

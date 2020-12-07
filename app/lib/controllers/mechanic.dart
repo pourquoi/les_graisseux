@@ -5,7 +5,7 @@ import 'package:get/state_manager.dart';
 class MechanicController extends GetxController {
   MechanicService mechanicService;
 
-  final current = Mechanic().obs;
+  final mechanic = Mechanic().obs;
 
   final loading = false.obs;
 
@@ -13,15 +13,14 @@ class MechanicController extends GetxController {
     mechanicService = Get.find<MechanicService>();
   }
 
-  void load(int id) {
+  Future load(int id) async {
     loading.value = true;
-    mechanicService.get(id).then((m) {
+    try {
+      mechanic.value = await mechanicService.get(id);
       loading.value = false;
-      current.value = m;
-    })
-    .catchError((error) {
+    } catch(err) {
+    } finally {
       loading.value = false;
-      throw error;
-    });
+    }
   }
 }

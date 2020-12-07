@@ -1,19 +1,47 @@
 import 'package:app/models/chat.dart';
+import 'package:app/models/user.dart';
 
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 
 class ChatRoomQueryParameters extends PaginatedQueryParameters {
-  ChatRoomQueryParameters({String q, int page, int itemsPerPage}) : super(q: q, page: page, itemsPerPage: itemsPerPage);
+  User user;
+  bool isPrivateChat;
+  bool isApplicationChat;
+  bool isJobChat;
+
+  ChatRoomQueryParameters({
+    this.user,
+    this.isPrivateChat,
+    this.isApplicationChat,
+    this.isJobChat,
+    String sort, String q, int page, int itemsPerPage
+  }) : super(sort: sort, q: q, page: page, itemsPerPage: itemsPerPage);
 
   Map<String, dynamic> toJson() {
     var params = super.toJson();
+    if (this.isPrivateChat != null) {
+      params['private'] = this.isPrivateChat ? 'true' : 'false';
+    }
+    if (this.isApplicationChat != null) {
+      params['exists[application]'] = this.isApplicationChat ? 'true' : 'false';
+    }
+    if (this.isJobChat != null) {
+      params['exists[job]'] = this.isJobChat ? 'true' : 'false';
+    }
+    if (this.user != null) {
+      params['users.user'] = this.user.id;
+    }
     return params;
   }
 }
 
 class ChatMessageQueryParameters extends PaginatedQueryParameters {
   String uuid;
-  ChatMessageQueryParameters({this.uuid, String q, int page, int itemsPerPage}) : super(q: q, page: page, itemsPerPage: itemsPerPage);
+
+  ChatMessageQueryParameters({
+    this.uuid, 
+    String sort, String q, int page, int itemsPerPage
+  }) : super(q: q, page: page, itemsPerPage: itemsPerPage);
 
   Map<String, dynamic> toJson() {
     var params = super.toJson();

@@ -10,7 +10,7 @@ class ServiceTest extends Base
 {
     use ReloadDatabaseTrait;
 
-    public function testGetCollection(): void
+    public function test_listing(): void
     {
         $response = static::createClient([], ['headers'=>['Accept-Language'=>'fr']])->request('GET', '/api/services');
 
@@ -19,7 +19,7 @@ class ServiceTest extends Base
         $this->assertJsonContains(['hydra:totalItems' => 7]);
     }
 
-    public function testCreate(): void
+    public function test_create(): void
     {
         $client = static::createClient();
 

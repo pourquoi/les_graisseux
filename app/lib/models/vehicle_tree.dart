@@ -1,9 +1,17 @@
 import 'package:app/models/common.dart';
 
+const VehicleTreeLevel = { 
+  "brand": "brand", 
+  "family": "family", 
+  "model": "model", 
+  "type": "type" 
+};
+
 class VehicleTree extends HydraResource {
   int id;
   String level;
   String name;
+  String thumbUrl;
 
   VehicleTree parent;
   List<VehicleTree> children;
@@ -14,6 +22,18 @@ class VehicleTree extends HydraResource {
     parseJson(json, context:context);
   }
 
+  String get fullName {
+    String _name = name ?? '';
+    if (parent != null) _name = parent.fullName + ' ' + _name;
+    return _name;
+  }
+
+  String get logo {
+    if (thumbUrl != null) return thumbUrl;
+    if (parent != null) return parent.logo;
+    return null;
+  }
+
   void parseJson(Map<String, dynamic> json, {Map<String, dynamic> context}) {
     if (context == null) context = initContext();
     super.parseJson(json, context:context);
@@ -21,6 +41,7 @@ class VehicleTree extends HydraResource {
     id = json['id'];
     level = json['level'];
     name = json['name'];
+    thumbUrl = json['logo_thumb_url'];
 
     context[CTX_MAP_BY_IDS][json['@id']] = this;
 

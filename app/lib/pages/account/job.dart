@@ -21,7 +21,7 @@ class AccountJobPage extends StatelessWidget
               bottom: TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.directions_car), text: 'Job'),
-                  Tab(icon: Icon(Icons.directions_transit), text: 'Candidates'),
+                  Tab(icon: Icon(Icons.directions_transit), text: 'Messages'),
                   Tab(icon: Icon(Icons.directions_bike)),
                 ],
               ),
@@ -38,7 +38,25 @@ class AccountJobPage extends StatelessWidget
                   ],
                 ),
                 Icon(Icons.directions_transit),
-                Icon(Icons.directions_bike),
+                Column(
+                  children: [
+                    Obx(() {
+                      if (controller.job.value.pictures.length > 0) {
+                        return Container(
+                          height: 150,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(controller.job.value.pictures[0].thumbUrl),
+                              fit: BoxFit.cover
+                            )
+                          )
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
+                    }),
+                  ],
+                )
               ],
             ),
           ),

@@ -1,7 +1,7 @@
 import 'package:app/controllers/app.dart';
 import 'package:app/controllers/user.dart';
 import 'package:app/models/user.dart';
-import 'package:app/widgets/ui/drawer.dart';
+import 'package:app/widgets/ui/profile_picture.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app/routes.dart' as routes;
@@ -17,6 +17,9 @@ class AccountPage extends StatelessWidget
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Obx(() => Text(userController.user.value.email ?? '')),
+            Obx(() => Text(userController.user.value.username ?? '')),
+            ProfilePictureWidget(),
             Obx(() {
               User user = userController.user.value;
               if (user.customer == null && user.mechanic == null) {

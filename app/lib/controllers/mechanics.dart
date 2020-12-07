@@ -1,10 +1,10 @@
 import 'package:app/models/mechanic.dart';
-import 'package:app/services/crud_service.dart';
+import 'package:app/services/crud.dart';
 import 'package:app/services/endpoints/mechanic.dart';
 import 'package:get/state_manager.dart';
 
 class MechanicsController extends GetxController {
-  MechanicService mechanicService;
+  MechanicService _crud;
 
   final items = [].obs;
   final pagination = PaginatedQueryResponse<Mechanic>().obs;
@@ -12,27 +12,36 @@ class MechanicsController extends GetxController {
   final loading = false.obs;
 
   void onInit() {
-    mechanicService = Get.find<MechanicService>();
+    _crud = Get.find<MechanicService>();
   }
 
-  Future<void> load() {
+  Future load() async {
     loading.value = true;
-    return mechanicService.search(params.value).then((response) {
-      pagination.value = response;
-      items.value = response.items;
+    try {
+      pagination.value = await _crud.search(params.value);
+      items.value = pagination.value.items;
+    } catch(err) {
+    } finally {
       loading.value = false;
-    }).catchError((error) {
-      loading.value = true;
-      throw error;
-    });
+    }
   }
 
-  Future<void> more() {
+  Future more() async {
     if (pagination.value.next != null) {
-      return mechanicService.next(pagination.value).then((response) {
-        pagination.value = response;
-        items.addAll(response.items);
-      });
+      loading.value = true;
+      try {
+        pagination.value = await _crud.next(pagination.value);
+        items.addAll(pagination.value.items);
+      } catch(err) {
+      } finally {
+        loading.value = false;
+      }
     }
+  }
+
+  Future sortBy(String sort) async {
+    params.value.sort = sort;
+    params.refresh();
+    return await load();
   }
 }
