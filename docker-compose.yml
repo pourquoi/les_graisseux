@@ -8,8 +8,8 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - $PWD/.docker/redis/data:/var/lib/redis
-      - $PWD/.docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - $PWD/docker/redis/data:/var/lib/redis
+      - $PWD/docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
@@ -30,9 +30,9 @@ services:
       MYSQL_PASSWORD: ${PROJECT}    
     volumes:
       - db_data:/var/lib/mysql:rw
-      - ./docker/mariadb/init:/docker-entrypoint-initdb.d
-      - ./docker/mariadb/conf:/etc/mysql/conf.d
-      - ./docker/mariadb/dump:/var/backups
+      - $PWD/docker/mariadb/init:/docker-entrypoint-initdb.d
+      - $PWD/docker/mariadb/conf:/etc/mysql/conf.d
+      - $PWD/docker/mariadb/dump:/var/backups
 
 
   mercure:
